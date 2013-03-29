@@ -92,7 +92,6 @@ void ClickMenuDeleteBookmark(GtkWidget *menuitem, gpointer userdata)
 	if(fullname)
 	{
     	ClassString link = g_build_filename(g_get_home_dir(),".config/billfm/bookmark",name, NULL );	
-		printf("delete bookmark %s\n",link.s);
 		unlink(link.s);
 		g_free(fullname);
 		g_free(name);			

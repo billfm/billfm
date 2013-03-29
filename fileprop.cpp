@@ -40,16 +40,9 @@ void DialogFileProperty(const char * fullname)
 {
 	ClassString str;
 	GtkEntry * entry;
-	GError *error = NULL;
-	GtkBuilder* builder = gtk_builder_new();
 
-	ClassString form = g_strdup_printf("%s/.config/billfm/file_properties.ui",g_get_home_dir());  
-	if( ! gtk_builder_add_from_file( builder, form.s, &error ) )
-	{
-		g_warning( "%s\n", error->message );
-		g_free( error );
-		return;
-	} 
+	GtkBuilder* builder=CreateForm("properties.glade");
+	if(!builder) return;
 
 	ClassString shortname = g_path_get_basename(fullname);
 	entry = (GtkEntry*) gtk_builder_get_object( builder, "file_name");
