@@ -1,0 +1,51 @@
+Archive:  /media/ext_data/Downloads/fuse-zip-3dd166189575.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+      122  2010-12-06 13:20   fuse-zip-3dd166189575/.hg_archival.txt
+      239  2010-12-06 13:20   fuse-zip-3dd166189575/.hgignore
+      755  2010-12-06 13:20   fuse-zip-3dd166189575/.hgtags
+      454  2010-12-06 13:20   fuse-zip-3dd166189575/INSTALL
+     7639  2010-12-06 13:20   fuse-zip-3dd166189575/LICENSE
+     1714  2010-12-06 13:20   fuse-zip-3dd166189575/Makefile
+     2224  2010-12-06 13:20   fuse-zip-3dd166189575/README
+      540  2010-12-06 13:20   fuse-zip-3dd166189575/TODO
+     3347  2010-12-06 13:20   fuse-zip-3dd166189575/changelog
+     1665  2010-12-06 13:20   fuse-zip-3dd166189575/config.h
+     2144  2010-12-06 13:20   fuse-zip-3dd166189575/fuse-zip.1
+      685  2010-12-06 13:20   fuse-zip-3dd166189575/lib/Makefile
+     8470  2010-12-06 13:20   fuse-zip-3dd166189575/lib/bigBuffer.cpp
+     5285  2010-12-06 13:20   fuse-zip-3dd166189575/lib/bigBuffer.h
+     7265  2010-12-06 13:20   fuse-zip-3dd166189575/lib/fileNode.cpp
+     3339  2010-12-06 13:20   fuse-zip-3dd166189575/lib/fileNode.h
+    12833  2010-12-06 13:20   fuse-zip-3dd166189575/lib/fuse-zip.cpp
+     4386  2010-12-06 13:20   fuse-zip-3dd166189575/lib/fuse-zip.h
+     3069  2010-12-06 13:20   fuse-zip-3dd166189575/lib/fuseZipData.cpp
+     2309  2010-12-06 13:20   fuse-zip-3dd166189575/lib/fuseZipData.h
+     1978  2010-12-06 13:20   fuse-zip-3dd166189575/lib/libZipWrapper.cpp
+     2692  2010-12-06 13:20   fuse-zip-3dd166189575/lib/libZipWrapper.h
+     2035  2010-12-06 13:20   fuse-zip-3dd166189575/lib/types.h
+     7954  2010-12-06 13:20   fuse-zip-3dd166189575/main.cpp
+      856  2010-12-06 13:20   fuse-zip-3dd166189575/makeArchives.sh
+     4476  2010-12-06 13:20   fuse-zip-3dd166189575/performance_logs/performance_comparison_0.2.0.txt
+     1227  2010-12-06 13:20   fuse-zip-3dd166189575/performance_logs/v0.1.0.log
+     1229  2010-12-06 13:20   fuse-zip-3dd166189575/performance_logs/v0.2.0.log
+     1792  2010-12-06 13:20   fuse-zip-3dd166189575/performance_tests/README
+      195  2010-12-06 13:20   fuse-zip-3dd166189575/performance_tests/kio_copy/kio_copy.pro
+     1132  2010-12-06 13:20   fuse-zip-3dd166189575/performance_tests/kio_copy/main.cpp
+    16042  2010-12-06 13:20   fuse-zip-3dd166189575/performance_tests/run-tests.tcl
+     7054  2010-12-06 13:20   fuse-zip-3dd166189575/performance_tests/unpackfs.config
+      172  2010-12-06 13:20   fuse-zip-3dd166189575/tests/Makefile
+       73  2010-12-06 13:20   fuse-zip-3dd166189575/tests/blackbox/Makefile
+      760  2010-12-06 13:20   fuse-zip-3dd166189575/tests/blackbox/README
+    76155  2010-12-06 13:20   fuse-zip-3dd166189575/tests/blackbox/data/bad-archive.zip
+    76155  2010-12-06 13:20   fuse-zip-3dd166189575/tests/blackbox/data/bad-crc.zip
+      243  2010-12-06 13:20   fuse-zip-3dd166189575/tests/blackbox/data/cp866.zip
+      319  2010-12-06 13:20   fuse-zip-3dd166189575/tests/blackbox/data/not-full-path.zip
+    38493  2010-12-06 13:20   fuse-zip-3dd166189575/tests/blackbox/fuse-zip.test
+     1156  2010-12-06 13:20   fuse-zip-3dd166189575/tests/blackbox/valgrind.supp
+      947  2010-12-06 13:20   fuse-zip-3dd166189575/tests/whitebox/Makefile
+    12647  2010-12-06 13:20   fuse-zip-3dd166189575/tests/whitebox/bigBufferTest.cpp
+     2398  2010-12-06 13:20   fuse-zip-3dd166189575/tests/whitebox/common.h
+     1969  2010-12-06 13:20   fuse-zip-3dd166189575/tests/whitebox/zip_open_failure.cpp
+---------                     -------
+   328633                     46 files
