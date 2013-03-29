@@ -1,5 +1,3 @@
-//fusesmb /home/vik/.net
-//setvbuf
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdio.h>
@@ -577,9 +575,8 @@ void DrawPathButton(const char * path, int save_path)
 
 int main( int    argc, char **argv )
 {
-	GError *error = NULL;
 	gtk_init( &argc, &argv );
-//	init_default_icon();
+
     ScanMime();		
 	for(int i=0;i<TV_COUNT;i++)
 	{	
@@ -589,18 +586,10 @@ int main( int    argc, char **argv )
 
 	InitListDisk();
 
-	builder = gtk_builder_new();
-//	ClassString main_glade = g_strdup_printf("%s/.config/billfm/main.glade",g_get_home_dir());
-	ClassString main_glade = g_strdup_printf("%s/billfm/main.glade",g_get_home_dir());
-	if( ! gtk_builder_add_from_file( builder, main_glade.s, &error ) )
-	{
-		g_warning( "%s\n", error->message );
-		return 1;
-	} 
-
-
+	builder=CreateForm("main.glade");
+	if(!builder) return -1;
+		
 	InitFolder();
-
 
 	topWindow = GTK_WINDOW(gtk_builder_get_object(builder, "topWindow"));
 	ReadSettings();
@@ -645,7 +634,6 @@ int main( int    argc, char **argv )
 	Panels[0]->SetNotActive();
 
 	ProgressBarCommon=(GtkProgressBar *)gtk_builder_get_object( builder, "progressbar1" );
-//	InitFarCopy(pb);
 	
 	gtk_window_set_title(GTK_WINDOW(topWindow), "Bill-file-manager");
 	gtk_window_set_icon(GTK_WINDOW(topWindow),GetIconByName("gnome-commander",ICON_SIZE));

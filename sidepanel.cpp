@@ -274,7 +274,8 @@ void ClassSidePanel::LoadDevice(void)
 
 	gtk_list_store_append( store, &iter );
 	gtk_list_store_set( store, &iter, MODEL_TEXT_NAME, "Desktop",	-1 );
-	gtk_list_store_set( store, &iter, MODEL_TEXT_FULL_NAME, "/home/vik/Рабочий стол" ,	-1 );
+   	ClassString str = g_build_filename(g_get_home_dir(),"Рабочий стол", NULL );	
+	gtk_list_store_set( store, &iter, MODEL_TEXT_FULL_NAME,str.s,-1);
 	gtk_list_store_set( store, &iter, MODEL_INT_COL_MIME,ICON_GNOME_FS_DESKTOP,-1);			
 
 	if(DropboxFolder)

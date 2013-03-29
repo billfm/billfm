@@ -280,7 +280,7 @@ int PrintTar(const char * buf)
 
 	gchar * p=(gchar*)buf;
 	char str[strlen(buf)+1];
-//drwxr-xr-x vik/vboxusers     0 2013-03-06 22:49 home/vik/billfm/
+
 	sscanf(p,"%s",str);
 	right=g_strdup(str);
 

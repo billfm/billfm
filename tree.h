@@ -363,3 +363,4 @@ void InitDropbox();
 int GetDropboxStatus();
 int GetDropboxStatusFile(const char * fullname);
 void DrawIconDropbox();
+GtkBuilder* CreateForm(const char * name);

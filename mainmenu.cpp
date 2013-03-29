@@ -77,14 +77,14 @@ void miToUpper(GtkObject *object, gpointer user_data)
 
 void miClearNet(GtkObject *object, gpointer user_data)
 {
-	ClearDir("/tmp/billfm/net");
+
 }
 
 //-----------------------------------------------------------------------------
 
 void miScanNet(GtkObject *object, gpointer user_data)
 {
-	system("/home/vik/billfm/net &");
+
 }
 
 void miMountSmbRead(GtkObject *object, gpointer user_data)
@@ -464,7 +464,7 @@ static void MountShared(int ReadOnly)
 //	ClassString com=g_strdup_printf("gvfs-mount smb:%s &",source.s);
 //}							   
 
-	ClassString com=g_strdup("gksudo /home/vik/billfm/copy-gets &");
+	ClassString com=g_strdup_printf("gksudo %s &",PATH_FM_UTILS);
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"SMB_MOUNT\n");
 	fprintf(f,"%s\n",fullname);

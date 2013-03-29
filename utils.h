@@ -7,6 +7,7 @@
 #define		PATH_CACHE_ARCHIVE			"/tmp/billfm/cache"
 #define		PATH_INFO_LOG				"/tmp/billfm/log/info.txt"
 #define		PATH_INFO_PROGRESS			"/tmp/billfm/log/progress.txt"
+#define		PATH_FM_UTILS				"/home/vik/billfm/copy-gets"
 
 #define TASK_MOVE 			1
 #define TASK_DELETE 		2

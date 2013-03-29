@@ -6,7 +6,7 @@
 
 #include <errno.h>
 #include "utils.h"
-//#define UI_FILE "override.ui"
+
 
 static GtkDialog *dialog;
 static GtkEntry* EntryCommand;
@@ -122,8 +122,7 @@ GtkBuilder* CreateForm(const char * name)
 {
 	GtkBuilder* builder = gtk_builder_new();
 	GError *error = NULL;
-//	ClassString form = g_strdup_printf("%s/.config/billfm/override.glade",g_get_home_dir());  
-	ClassString form = g_strdup_printf("%s/billfm/%s",g_get_home_dir(),name);
+	ClassString form = g_strdup_printf("%s/billfm/forms/%s",g_get_home_dir(),name);
 	if (!g_file_test( form.s, G_FILE_TEST_EXISTS ))
 	{
 		form = g_strdup_printf("/usr/share/billfm/%s",name);
@@ -454,7 +453,7 @@ int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest)
 	}
    
 
-	int res=gtk_dialog_run (dialog);
+	gtk_dialog_run (dialog);
     if(dialog)	gtk_widget_destroy( (GtkWidget*) dialog );
 	fo->mode_link=ModeCopyLink;
 	return 1;

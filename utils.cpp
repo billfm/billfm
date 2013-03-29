@@ -480,10 +480,10 @@ void ExternalFileCopy(uid_t user,int operation)
 	ClassString com;	
 	if(user!=getuid())
 	{	
-		com=g_strdup_printf("gksudo /home/vik/billfm/copy-gets &");
+		com=g_strdup_printf("gksudo %s &",PATH_FM_UTILS);
 	} else	
 	{	
-		com=g_strdup_printf("/home/vik/billfm/copy-gets &");		
+		com=g_strdup_printf("%s &",PATH_FM_UTILS);		
 	}	
 
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
@@ -506,7 +506,7 @@ void ExternalFileCopy(uid_t user,int operation)
  
 void ExternalCreateDir(const char * dest_dir)
 {
-	ClassString com=g_strdup("gksudo /home/vik/billfm/copy-gets &");
+	ClassString com=g_strdup_printf("gksudo %s &",PATH_FM_UTILS);		
 
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"CREATE_DIR\n");
@@ -521,8 +521,8 @@ void ExternalCreateDir(const char * dest_dir)
  
 void ExternalClearTrash(const char * dest_dir)
 {
-	ClassString com=g_strdup("gksudo /home/vik/billfm/copy-gets &");
-
+	ClassString com=g_strdup_printf("gksudo %s &",PATH_FM_UTILS);
+	
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"CLEAR_TRASH\n");
 	fprintf(f,"%s\n",dest_dir);
@@ -744,7 +744,7 @@ void UtilsCreateLink(const char * source, const char * dest_dir)
 void ExternalFind(const char * mask,const char * text, const char * dest_dir)
 {
 	ClearDir(PATH_FIND);
-	ClassString com=g_strdup("/home/vik/billfm/copy-gets &");
+	ClassString com=g_strdup_printf("%s &",PATH_FM_UTILS);
 
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"FIND\n");
@@ -835,7 +835,7 @@ int CreateNewSymlink(const char * link, const char * dest)
 void ExternalListTar(const char * fullname, const char * dest_dir)
 {
 	CreateDirInDir(dest_dir);
-	ClassString com=g_strdup("/home/vik/billfm/copy-gets &");
+	ClassString com=g_strdup_printf("%s &",PATH_FM_UTILS);
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"READ_TAR\n");
 	fprintf(f,"%s\n",dest_dir);
@@ -1046,85 +1046,6 @@ start:
 error:
 	if(fd) fclose(fd);
 	if(fs) fclose(fs);
-	ClassString mes = g_strdup_printf("Пробовать еще раз ?");
-	if(!DialogYesNo(mes.s)) return 1;
-	goto start;
-#undef READ_BUFFER
-}
-
-//-----------------------------------------------------------------------------
-
-int LowFileCopy2(const char * source, const char * dest, long int size, InfoOperation * fo)
-{
-
-#define READ_BUFFER 4096
-	char buf[READ_BUFFER];
-	int fs=0;
-	int fd=0;
-	long int i=0;
-	int n;
-	
-start:
-	fs=open(source,O_RDONLY);
-	if(!fs)
-	{
-		ClassString mes = g_strdup_printf("Error open source '%s'.\n%s",source,strerror(errno));
-		ShowCancel(mes.s);
-		goto error;
-//		return 1;
-	}	
-
-//	fd=open(dest,O_CREAT | O_WRONLY);
-	fd=open(dest,O_CREAT | O_WRONLY | O_TRUNC );
-	if(!fd)
-	{
-		ClassString mes = g_strdup_printf("Error open tag '%s'.\n%s",dest,strerror(errno));
-		ShowCancel(mes.s);
-//		return 1;
-		goto error;
-	}	
-
-	while(i<size)
-	{
-		if(size-i>READ_BUFFER) n=READ_BUFFER; else n=size-i;
-
-		int r=read(fs,buf,n);
-		if(r!=n)
-		{
-			ClassString mes = g_strdup_printf("Error read '%s'(%d %d).\n%s", source,r,n,strerror(errno));
-			ShowCancel(mes.s);
-			goto error;
-//			return 1;		
-		}	
-
-		size_t w=write(fd,(const void *)buf,n);
-		if(w!=n)
-		{
-			ClassString mes = g_strdup_printf("Error write '%s' (%d %d).\n%d-%s",
-			                              source,w,n,errno,strerror(errno));
-			ShowCancel(mes.s);
-			goto error;				
-//			return 1;		
-		}	
-		i+=n;
-        if(fo->progress>0)
-		{
-			char buf[128];
-			sprintf(buf,"%ld %ld\n",i,size);
-//			printf("%s",buf);
-			write(fo->progress,buf,strlen(buf));                          
-		}	
-	}
-
-	close(fd);
-	close(fs);
-//    CopyProperty(source,dest);
-//	printf("Copy file %s to %s ( %ld )\n",source,dest,size);
-	return 0;
-error:
-	if(fd) close(fd);
-	if(fs) close(fs);
-	sleep(1);
 	ClassString mes = g_strdup_printf("Пробовать еще раз ?");
 	if(!DialogYesNo(mes.s)) return 1;
 	goto start;
