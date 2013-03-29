@@ -396,8 +396,9 @@ void  miCreateBookmark(GtkButton* button, int index_operation)
 {
 	ClassString source=Panels[ActivePanel]->GetSelectedDir();
 	if(!source.s) return;	
-	ClassString dest_dir = g_build_filename(g_get_home_dir(),".config/billfm/bookmark", NULL );	
-	CreateLink(source.s,dest_dir.s,1,0);
+//	ClassString dest_dir = g_build_filename(g_get_home_dir(),".config/billfm/bookmark", NULL );	
+   	ClassString book=g_build_filename(config_path,"bookmark",NULL);
+	CreateLink(source.s,book.s,1,0);
 	side_panel.LoadDevice();
 }
 
@@ -412,7 +413,8 @@ int SetApplication(const char * app, const char * filename)
 	char * ext=GetExt(filename);
 	if(!ext) return 1;
 
-	ClassString setfile = g_strdup_printf("%s/.config/billfm/mime2command.txt",g_get_home_dir());
+//	ClassString setfile = g_strdup_printf("%s/.config/billfm/mime2command.txt",g_get_home_dir());
+	ClassString setfile=g_build_filename(config_path,"mime2command.txt",NULL);
 	FILE * f = fopen (setfile.s,"a+");
 	if(!f)
 	{	
@@ -464,7 +466,7 @@ static void MountShared(int ReadOnly)
 //	ClassString com=g_strdup_printf("gvfs-mount smb:%s &",source.s);
 //}							   
 
-	ClassString com=g_strdup_printf("gksudo %s &",PATH_FM_UTILS);
+	ClassString com=g_strdup_printf("gksudo %s &",util_path);
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"SMB_MOUNT\n");
 	fprintf(f,"%s\n",fullname);

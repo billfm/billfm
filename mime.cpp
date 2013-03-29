@@ -36,6 +36,7 @@ static InfoIcon *  find_userbin(const char * fullname, int enable_insert);
 void InsertCommand( char * ext,  char * command);
 static int GetMimeClassic(const char * path_folder, const char * full_name);
 
+
 //-----------------------------------------------------------------------------
 
 int  find_userbin_mime(const char * p)
@@ -121,16 +122,27 @@ InfoMime *  find_mime(const char * p)
 	}
  return NULL;
 }
-
+ 
 //-----------------------------------------------------------------------------
 
 GdkPixbuf * GetIconByName(const char * name, int size)
 {
+    if(name[0]=='~')
+	{	
+		ClassString str=g_strdup_printf("%s%s",g_get_home_dir(),&name[1]);
+		return gdk_pixbuf_new_from_file_at_scale(str.s,size,size,1,0);
+	}	
 	if(name[0]=='/')
 	{
 		return gdk_pixbuf_new_from_file_at_scale(name,size,size,1,0);
 	}
 
+	if(name[0]=='.')
+	{
+		ClassString str=g_strdup_printf("%s%s",app_path,&name[1]);
+		return gdk_pixbuf_new_from_file_at_scale(str.s,size,size,1,0);
+	}
+	
 	GtkIconTheme * icon_theme = gtk_icon_theme_get_default();
 	GtkIconInfo* inf = gtk_icon_theme_lookup_icon( icon_theme, name, size, 
 	                                              GTK_ICON_LOOKUP_USE_BUILTIN );
@@ -266,7 +278,8 @@ void ScanUsrbin(void)
 {
     if(list_userbin) return;
 	
-	ClassString setfile = g_strdup_printf("%s/.config/billfm/usrbin.txt",g_get_home_dir());
+//	ClassString setfile = g_strdup_printf("%s/.config/billfm/usrbin.txt",g_get_home_dir());
+	ClassString setfile=g_build_filename(config_path,"usrbin.txt",NULL);
 	FILE * f = fopen (setfile.s,"rt");
 	if(!f)
 	{	
@@ -382,7 +395,8 @@ InfoIcon *  find_userbin(const char * fullname, int enable_insert)
 
 	if(!enable_insert) return NULL;
 	
-	ClassString setfile = g_strdup_printf("%s/.config/billfm/usrbin.txt",g_get_home_dir());
+//	ClassString setfile = g_strdup_printf("%s/.config/billfm/usrbin.txt",g_get_home_dir());
+	ClassString setfile=g_build_filename(config_path,"usrbin.txt",NULL);
 	FILE * f = fopen (setfile.s,"a+");
 	if(!f)
 	{	
@@ -443,8 +457,10 @@ int  GetDeviceType(const char * _dev)
 
 gchar * GetNetworkPath(void)
 {
-//	return g_strdup_printf("%s/.config/billfm/net",g_get_home_dir());
-	return g_strdup_printf("%s/.net",g_get_home_dir());	
+	gchar * res=g_strdup_printf("%s/.net",g_get_home_dir()); 
+	struct stat filestat;
+	if(lstat(res,&filestat))  return 0;
+	return res;	
 }	
 
 //-----------------------------------------------------------------------------
@@ -514,7 +530,8 @@ static int LoadIcon(const char * buf)
  
 void init_default_icon(void)
 {
-	ClassString setfile = g_strdup_printf("%s/.config/billfm/default-icon.txt",g_get_home_dir());
+//	ClassString setfile = g_strdup_printf("%s/.config/billfm/default-icon.txt",g_get_home_dir());
+	ClassString setfile=g_build_filename(config_path,"default-icon.txt",NULL);
 	LoadGets(setfile.s,LoadIcon);
 	PixbufEmblemLink=gdk_pixbuf_new_from_file_at_scale(PATH_ICON_LINK,8,8,1,0);
 }
@@ -541,7 +558,8 @@ void ScanMime(void)
 {
 	init_default_icon();
 
-	ClassString setfile = g_strdup_printf("%s/.config/billfm/mime2command.txt",g_get_home_dir());
+//	ClassString setfile = g_strdup_printf("%s/.config/billfm/mime2command.txt",g_get_home_dir());
+	ClassString setfile=g_build_filename(config_path,"mime2command.txt",NULL);
 	LoadGets(setfile.s,LoadCommand);
 
 	ScanUsrbin();	
@@ -556,7 +574,7 @@ int GetMime(const char * dirname, const char * fullname)
 	int flags = mime_type & (~0xFF);
 	
 	ClassString net_path=GetNetworkPath();
-	if(!strncmp(net_path.s,dirname,strlen(net_path.s)) && (type==ICON_GNOME_FS_FOLDER))
+	if(net_path.s && !strncmp(net_path.s,dirname,strlen(net_path.s)) && (type==ICON_GNOME_FS_FOLDER))
 	{	
 		ClassString is_domain=g_path_get_dirname(fullname);
 		ClassString is_computer=g_path_get_dirname(is_domain.s);
@@ -582,7 +600,7 @@ int GetMime(const char * dirname, const char * fullname)
 		mime_type=find_userbin_mime(fullname);
 	} else
 
-	if(!strncmp(fullname,PATH_BILLFM_MENU,strlen(PATH_BILLFM_MENU)))
+	if(!InMenuPath(fullname))
 	{
 		mime_type=GetMimeClassic(dirname,fullname);
 		mime_type&=0xFF;

@@ -22,6 +22,21 @@ GtkProgressBar* ProgressBarCommon;
 static pthread_mutex_t BusyProgress;
 static void * ThreadProgress(void * arg);
 
+static gchar * menu_path;
+gchar * app_path;
+gchar * config_path;
+
+
+int InMenuPath(const char * path)
+{
+	return strncmp(path,menu_path,strlen(menu_path));
+}
+
+gchar * GetUtilPath()
+{
+	return util_path;
+}
+
 typedef struct TPathButton
 {
 	GtkButton * button;
@@ -379,21 +394,42 @@ static gboolean on_main_window_keypress( GtkWidget * widget, GdkEventKey* event,
 
 //-----------------------------------------------------------------------------
 
-void InitFolder(void)
+void InitFolder(gchar * argv0)
 {
-    ClassString str=g_path_get_dirname(PATH_INFO_LOG);
+	struct stat dest_stat;
+	app_path=g_path_get_dirname(argv0);
+	
+	ClassString str=g_path_get_dirname(PATH_INFO_LOG);
 	CreateDirInDir(str.s);
 	mknod(PATH_INFO_LOG,010777,0);
 //	int log_id=open(PATH_INFO_LOG,O_RDONLY);	
 	mknod(PATH_INFO_PROGRESS,010777,0);	
-	str = g_strdup_printf("%s/.config/billfm/bookmark",g_get_home_dir());
+
+	config_path=g_strdup_printf("%s/.config/billfm",g_get_home_dir());
+
+	if(lstat(config_path, &dest_stat)) 
+		config_path=g_strdup_printf("%s/.config/billfm",app_path);
+
+    str=g_build_filename(config_path,"bookmark",NULL);
 	CreateDirInDir(str.s);
 
-	str = g_strdup_printf("%s/.config/billfm/setting",g_get_home_dir());
+//	str = g_strdup_printf("%s/.config/billfm/setting",g_get_home_dir());
+    str=g_build_filename(config_path,"setting",NULL);
 	CreateDirInDir(str.s);
 
 	const char tmp[]="/tmp/billfm/find";
 	CreateDirInDir(tmp);
+
+
+    str=g_build_filename(app_path,"copy-gets", NULL );
+
+
+    if(lstat(str.s, &dest_stat))  util_path=g_strdup("copy-gets");
+	 else util_path=g_strdup(str.s);
+
+//	menu_path=g_build_filename(g_get_home_dir(),".config/billfm/menu/",NULL);
+    menu_path=g_build_filename(config_path,"menu",NULL);
+	CreateDirInDir(menu_path);
 }
 
 //-----------------------------------------------------------------------------
@@ -576,7 +612,8 @@ void DrawPathButton(const char * path, int save_path)
 int main( int    argc, char **argv )
 {
 	gtk_init( &argc, &argv );
-
+	InitFolder(argv[0]);
+	
     ScanMime();		
 	for(int i=0;i<TV_COUNT;i++)
 	{	
@@ -589,8 +626,6 @@ int main( int    argc, char **argv )
 	builder=CreateForm("main.glade");
 	if(!builder) return -1;
 		
-	InitFolder();
-
 	topWindow = GTK_WINDOW(gtk_builder_get_object(builder, "topWindow"));
 	ReadSettings();
 
@@ -636,7 +671,8 @@ int main( int    argc, char **argv )
 	ProgressBarCommon=(GtkProgressBar *)gtk_builder_get_object( builder, "progressbar1" );
 	
 	gtk_window_set_title(GTK_WINDOW(topWindow), "Bill-file-manager");
-	gtk_window_set_icon(GTK_WINDOW(topWindow),GetIconByName("gnome-commander",ICON_SIZE));
+
+	gtk_window_set_icon(GTK_WINDOW(topWindow),IconPixbuf[ICON_GNOME_COMMANDER]);	
 
 	OnMenuOnePanel(0,0);
 	OnMenuSidePanel(0,0);

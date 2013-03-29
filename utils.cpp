@@ -16,6 +16,8 @@ using namespace std;
 //-----------------------------------------------------------------------------
 int SizeDirShow=0;
 
+gchar * util_path;
+
 static int all_dirs;
 static int all_files;
 static long int all_size;
@@ -480,10 +482,10 @@ void ExternalFileCopy(uid_t user,int operation)
 	ClassString com;	
 	if(user!=getuid())
 	{	
-		com=g_strdup_printf("gksudo %s &",PATH_FM_UTILS);
+		com=g_strdup_printf("gksudo %s &",util_path);
 	} else	
 	{	
-		com=g_strdup_printf("%s &",PATH_FM_UTILS);		
+		com=g_strdup_printf("%s &",util_path);
 	}	
 
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
@@ -506,7 +508,7 @@ void ExternalFileCopy(uid_t user,int operation)
  
 void ExternalCreateDir(const char * dest_dir)
 {
-	ClassString com=g_strdup_printf("gksudo %s &",PATH_FM_UTILS);		
+	ClassString com=g_strdup_printf("gksudo %s &",util_path);
 
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"CREATE_DIR\n");
@@ -521,7 +523,7 @@ void ExternalCreateDir(const char * dest_dir)
  
 void ExternalClearTrash(const char * dest_dir)
 {
-	ClassString com=g_strdup_printf("gksudo %s &",PATH_FM_UTILS);
+	ClassString com=g_strdup_printf("gksudo %s &",util_path);
 	
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"CLEAR_TRASH\n");
@@ -744,7 +746,7 @@ void UtilsCreateLink(const char * source, const char * dest_dir)
 void ExternalFind(const char * mask,const char * text, const char * dest_dir)
 {
 	ClearDir(PATH_FIND);
-	ClassString com=g_strdup_printf("%s &",PATH_FM_UTILS);
+	ClassString com=g_strdup_printf("%s &",util_path);
 
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"FIND\n");
@@ -835,7 +837,7 @@ int CreateNewSymlink(const char * link, const char * dest)
 void ExternalListTar(const char * fullname, const char * dest_dir)
 {
 	CreateDirInDir(dest_dir);
-	ClassString com=g_strdup_printf("%s &",PATH_FM_UTILS);
+	ClassString com=g_strdup_printf("%s &",util_path);
 	FILE * f=fopen("/tmp/billfm.txt","w+"); 
 	fprintf(f,"READ_TAR\n");
 	fprintf(f,"%s\n",dest_dir);

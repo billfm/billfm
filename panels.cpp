@@ -327,7 +327,7 @@ void ClassPanel::LoadBlackFiles()
 	ClassString setfile = g_strdup_printf("%s/.billfm.dir",MyPath);
 
 	ClassString net_path=GetNetworkPath();
-	if(!strncmp(net_path.s,MyPath,strlen(net_path.s))) return;
+	if(net_path.s && !strncmp(net_path.s,MyPath,strlen(net_path.s))) return;
 
 	struct stat filestat;
 
@@ -462,7 +462,8 @@ void ClassPanel::LoadDir(const char * fullname)
 	if(!strcmp(fullname,"/usr/bin")) ScanUsrbin();
 
 	TypeFS = GetTypeFS(fullname);	
-	if(!strncmp(fullname,PATH_BILLFM_MENU,strlen(PATH_BILLFM_MENU)))
+//	if(!strncmp(fullname,PATH_BILLFM_MENU,strlen(PATH_BILLFM_MENU)))
+	if(!InMenuPath(fullname))
 	{	
 		LoadMenu(fullname);
 	} else

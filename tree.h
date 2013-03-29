@@ -26,8 +26,9 @@ using namespace std;
 #define		ICON_GNOME_NETWORK			15
 #define		ICON_GNOME_COMPUTER  		16
 #define		ICON_GNOME_SMB_SHARE  		17
+#define		ICON_GNOME_COMMANDER  		18
 
-#define		FIRST_FREE_INDEX			18
+#define		FIRST_FREE_INDEX			19
 
 
 #define		MIME_FLAG_LINK				0x8000
@@ -364,3 +365,4 @@ int GetDropboxStatus();
 int GetDropboxStatusFile(const char * fullname);
 void DrawIconDropbox();
 GtkBuilder* CreateForm(const char * name);
+int InMenuPath(const char * path);

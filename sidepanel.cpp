@@ -91,7 +91,8 @@ void ClickMenuDeleteBookmark(GtkWidget *menuitem, gpointer userdata)
     side_panel.GetSelectedItem(&fullname, &mime, &name);
 	if(fullname)
 	{
-    	ClassString link = g_build_filename(g_get_home_dir(),".config/billfm/bookmark",name, NULL );	
+//    	ClassString link = g_build_filename(g_get_home_dir(),".config/billfm/bookmark",name, NULL );	
+    	ClassString link=g_build_filename(config_path,"bookmark",name,NULL);
 		unlink(link.s);
 		g_free(fullname);
 		g_free(name);			
@@ -224,8 +225,8 @@ void ClassSidePanel::ScanBookmark(GtkListStore * store)
 {
 	GtkTreeIter   iter;
 
-	ClassString book = g_build_filename(g_get_home_dir(),".config/billfm/bookmark", NULL );	
-
+//	ClassString book = g_build_filename(g_get_home_dir(),".config/billfm/bookmark", NULL );	
+   	ClassString book=g_build_filename(config_path,"bookmark",NULL);
 	struct dirent ** entry;
 	int n = scandir(book.s, &entry, sel, alphasort);
 	if (n < 0) 
@@ -285,22 +286,28 @@ void ClassSidePanel::LoadDevice(void)
 		gtk_list_store_set( store, &iter, MODEL_INT_COL_MIME,ICON_GNOME_DROPBOX,-1);
 	}
 
-	ClassString book = g_build_filename(g_get_home_dir(),".config/billfm/bookmark", NULL );	
+
+   	ClassString book=g_build_filename(config_path,"bookmark",NULL);
 	gtk_list_store_append( store, &iter );
 	gtk_list_store_set( store, &iter, MODEL_TEXT_NAME, "Bookmark",	-1 );
 	gtk_list_store_set( store, &iter, MODEL_TEXT_FULL_NAME, book.s ,	-1 );
 	gtk_list_store_set( store, &iter, MODEL_INT_COL_MIME,ICON_GNOME_BOOKMARK,-1);			
 
+
+   	ClassString appdir=g_build_filename(config_path,"menu",NULL);
 	gtk_list_store_append( store, &iter );
-	gtk_list_store_set( store, &iter, MODEL_TEXT_NAME, "Applications",	-1 );
-	gtk_list_store_set( store, &iter, MODEL_TEXT_FULL_NAME,"/usr/share/applications",	-1 );
+	gtk_list_store_set( store, &iter, MODEL_TEXT_NAME, "Программы",	-1 );
+	gtk_list_store_set( store, &iter, MODEL_TEXT_FULL_NAME,appdir.s,	-1 );
 	gtk_list_store_set( store, &iter, MODEL_INT_COL_MIME,ICON_GNOME_APPLICATION,-1);			
 
-	gtk_list_store_append( store, &iter );
-	gtk_list_store_set( store, &iter, MODEL_TEXT_NAME, "Network",	-1 );
 	ClassString net_path=GetNetworkPath();
-	gtk_list_store_set( store, &iter, MODEL_TEXT_FULL_NAME,net_path.s,	-1 );
-	gtk_list_store_set( store, &iter, MODEL_INT_COL_MIME,ICON_GNOME_NETWORK,-1);			
+	if(net_path.s)
+	{	
+		gtk_list_store_append( store, &iter );
+		gtk_list_store_set( store, &iter, MODEL_TEXT_NAME, "Network",	-1 );
+		gtk_list_store_set( store, &iter, MODEL_TEXT_FULL_NAME,net_path.s,	-1 );
+		gtk_list_store_set( store, &iter, MODEL_INT_COL_MIME,ICON_GNOME_NETWORK,-1);
+	}	
 
 	
 
@@ -401,7 +408,7 @@ void ClassSidePanel::ScanDiskByLabel(GtkListStore * store)
 
 		ClassString net_path=GetNetworkPath();
 		int mime_type;
-		if(!strncmp(info->mount,net_path.s,strlen(net_path.s)))
+		if(net_path.s && !strncmp(info->mount,net_path.s,strlen(net_path.s)))
 		{
 			mime_type=ICON_GNOME_SMB_SHARE;
 			label=g_strdup(&label.s[strlen(net_path.s)+1]);

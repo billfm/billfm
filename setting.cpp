@@ -22,9 +22,10 @@ extern gchar * DropboxFolder;
 
 void	ReadSettings(void)
 {
-	gchar * str = g_strdup_printf("%s/.config/billfm/setting/bilfm.conf",g_get_home_dir());
-	FILE * read_fp = fopen(str, "rt"); 
-	g_free(str);
+//	gchar * str = g_strdup_printf("%s/.config/billfm/setting/bilfm.conf",g_get_home_dir());
+	ClassString setfile=g_build_filename(config_path,"setting/bilfm.conf",NULL);
+	FILE * read_fp = fopen(setfile.s, "rt"); 
+//	g_free(str);
 	
 	if(!read_fp) return;
 
@@ -116,9 +117,10 @@ void	ReadSettings(void)
 
 void	SaveSetting(void)
 {
-	gchar * str = g_strdup_printf("%s/.config/billfm/setting/bilfm.conf",g_get_home_dir());
-	FILE * fp = fopen(str, "wt+"); 
-	g_free(str);
+//	gchar * str = g_strdup_printf("%s/.config/billfm/setting/bilfm.conf",g_get_home_dir());
+	ClassString setfile=g_build_filename(config_path,"setting/bilfm.conf",NULL);
+	FILE * fp = fopen(setfile.s, "wt+"); 
+//	g_free(str);
 
 	char buf[SIZE_BUF+1];
 

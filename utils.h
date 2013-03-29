@@ -1,13 +1,13 @@
-#define		PATH_FIND		"/tmp/billfm/find"
-
 #define		PATH_ICON_DROPBOX_OK		"/home/vik/billfm/icons/emblem-default.png"
 #define		PATH_ICON_DROPBOX_SYNC		"/home/vik/billfm/icons/emblem-dropbox-syncing.png"
 #define		PATH_ICON_LINK				"/home/vik/billfm/icons/emblem-symbolic-link.png"
-#define		PATH_BILLFM_MENU			"/home/vik/menu"
+
+
 #define		PATH_CACHE_ARCHIVE			"/tmp/billfm/cache"
 #define		PATH_INFO_LOG				"/tmp/billfm/log/info.txt"
 #define		PATH_INFO_PROGRESS			"/tmp/billfm/log/progress.txt"
-#define		PATH_FM_UTILS				"/home/vik/billfm/copy-gets"
+#define		PATH_FIND					"/tmp/billfm/find"
+
 
 #define TASK_MOVE 			1
 #define TASK_DELETE 		2
@@ -179,3 +179,6 @@ int IsZip(const char * fullname);
 int IsTar(const char * destdir);
 int IsRar(const char * fullname);
 int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest);
+extern gchar * util_path;
+extern gchar * app_path;
+extern gchar * config_path;
