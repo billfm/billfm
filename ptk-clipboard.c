@@ -80,45 +80,6 @@ static void clipboard_clean_data ( GtkClipboard *clipboard,
 
 //-----------------------------------------------------------------------------
 
- 
-void ptk_clipboard_cut_or_copy_files( GList* files, int action )
-{
-    GtkClipboard * clip = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
-    GtkTargetList* target_list = gtk_target_list_new( NULL, 0 );
-    GList* target;
-    gint i, n_targets;
-    GtkTargetEntry* targets;
-    GtkTargetPair* pair;
-    clipboard_action=(GdkDragAction)action;
-    gtk_target_list_add_text_targets( target_list, 0 );
-    n_targets = g_list_length( target_list->list ) + 2;
-
-    targets = g_new0( GtkTargetEntry, n_targets );
-    target = target_list->list;
-    for ( i = 0; target; ++i, target = g_list_next( target ) )
-    {
-        pair = ( GtkTargetPair* ) target->data;
-        targets[ i ].target = gdk_atom_name ( pair->target );
-    }
-    targets[ i ].target = (gchar*)"x-special/gnome-copied-files";
-    targets[ i + 1 ].target = (gchar*)"text/uri-list";
-
-    gtk_target_list_unref ( target_list );
-
-    clipboard_file_list = files;
-
-	gtk_clipboard_set_with_data ( clip, targets, n_targets,
-                                  clipboard_get_data,
-                                  clipboard_clean_data,
-                                  NULL );
-
-    g_free( targets );
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
 char *replace_string( char* orig, char* str, char* replace, gboolean quote )
 {   // replace all occurrences of str in orig with replace, optionally quoting
     char* rep;
@@ -473,6 +434,43 @@ GList* ptk_clipboard_paste_files( int * action )
         gtk_selection_data_free( sel_data );
     }
 	return paste_list;
+}
+
+//-----------------------------------------------------------------------------
+
+ 
+void ptk_clipboard_cut_or_copy_files( GList* files, int action )
+{
+    GtkClipboard * clip = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
+    GtkTargetList* target_list = gtk_target_list_new( NULL, 0 );
+    GList* target;
+    gint i, n_targets;
+    GtkTargetEntry* targets;
+    GtkTargetPair* pair;
+    clipboard_action=(GdkDragAction)action;
+    gtk_target_list_add_text_targets( target_list, 0 );
+    n_targets = g_list_length( target_list->list ) + 2;
+
+    targets = g_new0( GtkTargetEntry, n_targets );
+    target = target_list->list;
+    for ( i = 0; target; ++i, target = g_list_next( target ) )
+    {
+        pair = ( GtkTargetPair* ) target->data;
+        targets[ i ].target = gdk_atom_name ( pair->target );
+    }
+    targets[ i ].target = (gchar*)"x-special/gnome-copied-files";
+    targets[ i + 1 ].target = (gchar*)"text/uri-list";
+
+    gtk_target_list_unref ( target_list );
+
+    clipboard_file_list = files;
+
+	gtk_clipboard_set_with_data ( clip, targets, n_targets,
+                                  clipboard_get_data,
+                                  clipboard_clean_data,
+                                  NULL );
+
+    g_free( targets );
 }
 
 //-----------------------------------------------------------------------------

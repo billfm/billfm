@@ -1,8 +1,3 @@
-#define		PATH_ICON_DROPBOX_OK		"/home/vik/billfm/icons/emblem-default.png"
-#define		PATH_ICON_DROPBOX_SYNC		"/home/vik/billfm/icons/emblem-dropbox-syncing.png"
-#define		PATH_ICON_LINK				"/home/vik/billfm/icons/emblem-symbolic-link.png"
-
-
 #define		PATH_CACHE_ARCHIVE			"/tmp/billfm/cache"
 #define		PATH_INFO_LOG				"/tmp/billfm/log/info.txt"
 #define		PATH_INFO_PROGRESS			"/tmp/billfm/log/progress.txt"

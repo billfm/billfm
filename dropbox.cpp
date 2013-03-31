@@ -271,9 +271,10 @@ void DrawIconDropbox()
 void InitDropbox()
 {
 	ConnectDropbox();
-
-	PixbufEmblemDropboxOk=gdk_pixbuf_new_from_file_at_scale(PATH_ICON_DROPBOX_OK,8,8,1,0);
-	IconSync[0]=gdk_pixbuf_new_from_file(PATH_ICON_DROPBOX_SYNC, NULL);
+    ClassString setfile=g_build_filename(config_path,"/icons/emblem-default.png",NULL);
+	PixbufEmblemDropboxOk=gdk_pixbuf_new_from_file_at_scale(setfile.s,8,8,1,0);
+    setfile=g_build_filename(config_path,"/icons/emblem-dropbox-syncing.png",NULL);
+	IconSync[0]=gdk_pixbuf_new_from_file(setfile.s, NULL);
 	if(!IconSync[0])
 	{	
 		printf("Not load PATH_ICON_DROPBOX_SYNC\n");

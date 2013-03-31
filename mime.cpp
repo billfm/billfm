@@ -533,7 +533,8 @@ void init_default_icon(void)
 //	ClassString setfile = g_strdup_printf("%s/.config/billfm/default-icon.txt",g_get_home_dir());
 	ClassString setfile=g_build_filename(config_path,"default-icon.txt",NULL);
 	LoadGets(setfile.s,LoadIcon);
-	PixbufEmblemLink=gdk_pixbuf_new_from_file_at_scale(PATH_ICON_LINK,8,8,1,0);
+    setfile=g_build_filename(config_path,"/icons/emblem-symbolic-link.png",NULL);
+	PixbufEmblemLink=gdk_pixbuf_new_from_file_at_scale(setfile.s,8,8,1,0);
 }
 
 //-----------------------------------------------------------------------------

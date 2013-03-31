@@ -387,43 +387,6 @@ void OnButtonMove( GtkButton* button, int index_operation )
 
 //-----------------------------------------------------------------------------
 
-void OnButtonDelete( GtkButton* button, int on_dialog ) 
-{
-	int intrash;
-	ClassString mes;
-
-	if(IsAlreadyTrashed(Panels[ActivePanel]->MyPath))
-	{   
-		mes="Это файлы уже в корзине.\nУдалить безвозвратно?";
-		intrash=0;
-		on_dialog=1;
-	} else
-	{
-		const char * path_trash;
-		path_trash=Filename2TrashDir(Panels[ActivePanel]->MyPath);
-		if(!path_trash) 
-		{
-			mes="Корзина не найдена, удалить безвозвратно?";
-			intrash=0;
-			on_dialog=1;
-		} else
-		{
-			mes="Переместить в корзину?";
-			intrash=1;
-		}	
-	}
-
-	if(on_dialog)
-	{	
-		if(!DialogYesNo(mes.s)) return;
-	}	
-
-	GList * l = Panels[ActivePanel]->GetSelectedFiles();
-	if(intrash)	UtilsMoveInTrash(l); else UtilsUnlink(l);
-}
-
-//-----------------------------------------------------------------------------
-
 void OnButtonEdit( GtkButton * b, int flags ) 
 {
 	const char * edit=EditViewDefault[flags &3];
@@ -586,6 +549,43 @@ void OnButtonCopy( GtkButton* button, int _index_operation )
 //		ProcessCopyFiles(PanelGetDestDir(),&fo);
 		ExternalFileCopy(getuid(),TASK_COPY);
 	}
+}
+
+//-----------------------------------------------------------------------------
+
+void OnButtonDelete( GtkButton* button, int on_dialog ) 
+{
+	int intrash;
+	ClassString mes;
+
+	if(IsAlreadyTrashed(Panels[ActivePanel]->MyPath))
+	{   
+		mes="Это файлы уже в корзине.\nУдалить безвозвратно?";
+		intrash=0;
+		on_dialog=1;
+	} else
+	{
+		const char * path_trash;
+		path_trash=Filename2TrashDir(Panels[ActivePanel]->MyPath);
+		if(!path_trash) 
+		{
+			mes="Корзина не найдена, удалить безвозвратно?";
+			intrash=0;
+			on_dialog=1;
+		} else
+		{
+			mes="Переместить в корзину?";
+			intrash=1;
+		}	
+	}
+
+	if(on_dialog)
+	{	
+		if(!DialogYesNo(mes.s)) return;
+	}	
+
+	GList * l = Panels[ActivePanel]->GetSelectedFiles();
+	if(intrash)	UtilsMoveInTrash(l); else UtilsUnlink(l);
 }
 
 //-----------------------------------------------------------------------------

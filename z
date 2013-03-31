@@ -1,6 +1,6 @@
 #!/bin/bash
 tty -s || exec lxterminal -e "$0" "$@"
-cd /home/vik/billfm
+cd ~/billfm
 g++ $(pkg-config --cflags --libs gtk+-2.0) stubs.cpp copy-gets.cpp utils.cpp disks.cpp override.cpp \
 trash.cpp bufgets.cpp -o copy-gets
 echo OK
