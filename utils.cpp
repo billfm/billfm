@@ -882,10 +882,8 @@ void ProcessCopyFiles(const char * dest_dir, InfoOperation * fo)
     InfoDir(l);
 	fo->all_size=all_size;
 	fo->progress = open(PATH_INFO_PROGRESS,O_WRONLY);
-//	lseek(fo->progress,0,0);
 	FileOperation1(l,dest_dir,fo);
-    sleep(3);
-	close(fo->progress);
+	if(fo->progress>0) close(fo->progress);
 }
 
 //-----------------------------------------------------------------------------

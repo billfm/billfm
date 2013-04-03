@@ -21,9 +21,12 @@
 extern GtkProgressBar* ProgressBar;
 extern GtkProgressBar* PulseBar;
 
-static float progress_value;
+static size_t progress_size;
+static size_t progress_done;
 static int puls_end;
+
 static int PulseVisible;
+
 static pthread_mutex_t BusyProgress;
 gpointer ThreadProgress(gpointer data);
 
@@ -32,7 +35,8 @@ gpointer ThreadProgress(gpointer data);
 void StartProgressBar()
 {
 	unlink(PATH_INFO_PROGRESS);
-	if(mknod(PATH_INFO_PROGRESS,010777,0))
+//	if(mknod(PATH_INFO_PROGRESS,010777,0))
+	if(mkfifo(PATH_INFO_PROGRESS,0777))
 	{
 		printf("Error make fifo\n");
 	}	
@@ -130,6 +134,7 @@ void InitExtUtils(void)
 }
 
 //------------------------------------------------------------------------------
+				progress_value=double(done)/all;
 
 void DrawProgress(void)
 {
@@ -249,10 +254,11 @@ gpointer ThreadProgress(gpointer data)
 		    { 
 				buf[len-1]=0;
 				sscanf(buf,"%ld %ld",&done,&all);
-				printf("%s\n",buf);
+//				printf("%s\n",buf);
 				len=0;
 				pthread_mutex_lock(&BusyProgress);	
-				progress_value=double(done)/all;
+				progress_size=all;
+				progress_done=done;
 				pthread_mutex_unlock(&BusyProgress);	
 		    } 
 		} else break;
