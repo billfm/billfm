@@ -15,8 +15,6 @@ int ShowOne;
 static char * ButtonName[COUNT_FUNCTION_BUTTON];
 static char * ButtonLabel[COUNT_FUNCTION_BUTTON];
 
-void OnButtonXTerm( GtkButton* button, int index_operation );
-
 
 const char * EditViewDefault[] =
 {
@@ -199,7 +197,7 @@ void InitButton(void)
 	ButtonName[6]=g_strdup_printf("bSearch");
 	ButtonName[7]=g_strdup_printf("bReload");
 	ButtonName[8]=g_strdup_printf("bRun");
-	ButtonName[9]=g_strdup_printf("bXTerm");
+	ButtonName[9]=g_strdup_printf("bTest");
 	ButtonName[10]=g_strdup_printf("bSame");
 	ButtonName[11]=g_strdup_printf("bHome");
 	ButtonName[12]=g_strdup_printf("bSidePanel");
@@ -220,7 +218,7 @@ void InitButton(void)
 	ButtonLabel[6]=g_strdup_printf("Search");
 	ButtonLabel[7]=g_strdup_printf("Reload");
 	ButtonLabel[8]=g_strdup_printf("Lock");
-	ButtonLabel[9]=g_strdup_printf("View Tar");//
+	ButtonLabel[9]=g_strdup_printf("Test");
 	ButtonLabel[10]=g_strdup_printf("Same");
 	ButtonLabel[11]=g_strdup_printf("Home");
 	ButtonLabel[12]=g_strdup_printf("Side");
@@ -241,7 +239,7 @@ void InitButton(void)
 	SetButton( OnButtonSearch, 6 );
 	SetButton( OnButtonReload, 7 );
 	SetButton( OnButtonRun, 8 );
-	SetButton( OnButtonXTerm, 9 );
+	SetButton( OnButtonTest, 9 );
 	SetButton( OnButtonSame, 10 );
 	SetButton( OnButtonHome, 11 );
 	SetButton( (OnButtonFunction*)OnMenuSidePanel, 12 );
@@ -379,14 +377,6 @@ void	OnButtonBookmark( GtkButton* button, int index_operation )
 
 //-----------------------------------------------------------------------------
 
-void OnButtonMove( GtkButton* button, int index_operation ) 
-{
-	GList * l = PanelGetSelected();
-	DialogCopy(TASK_MOVE, PanelGetDestDir(),l);
-}
-
-//-----------------------------------------------------------------------------
-
 void OnButtonEdit( GtkButton * b, int flags ) 
 {
 	const char * edit=EditViewDefault[flags &3];
@@ -402,31 +392,7 @@ void OnButtonEdit( GtkButton * b, int flags )
 
 	Untar(name.s,0);
 	
-	ClassString com=g_strdup_printf("file '%s' ",name.s);
-/*	int is_text=0;
-
-	FILE * f = popen (com.s,"r");
-	if(f)
-	{	
-		char str[1024];
-		if(fgets(str,1023,f))
-		{
-			is_text=(strstr(str,"text")!=0);
-		}
-		pclose(f);
-	}	
-	ClassString ext=GetExt(name.s);
-	if(ext.s && (!strcmp(ext.s,"txt") || !strcmp(ext.s,"desktop")))
-	{
-		is_text=1;
-	}	
-	if(!is_text)
-	{	
-		ClassString mes=g_strdup("Файл похоже не текстовый.\nВсе равно открыть редактором текста ?");
-		if(!DialogYesNo(mes.s)) return;
-	}
-*/	
-	com = g_strdup_printf("%s '%s' &", edit, name.s);
+	ClassString com = g_strdup_printf("%s '%s' &", edit, name.s);
 	system(com.s);
 }
 
@@ -517,23 +483,6 @@ gchar * Untar(const char * name,const char * destdir)
 
 //-----------------------------------------------------------------------------
 
-void OnButtonXTerm( GtkButton* button, int index_operation ) 
-{
-	ClassString name=Panels[ActivePanel]->GetSelectedItem();
-	ClassString com;
-
-	ClassString mes=Untar(name.s,0);
-	if(mes.s)
-	{
-		gtk_statusbar_push (StatusBar,0,mes.s);
-		return;
-	}	
-//	com=g_strdup_printf("leafpad '%s'",name.s);
-//	system(com.s);
-}
-
-//-----------------------------------------------------------------------------
-
 void OnButtonCopy( GtkButton* button, int _index_operation ) 
 {
 	GList * l = PanelGetSelected();
@@ -544,11 +493,15 @@ void OnButtonCopy( GtkButton* button, int _index_operation )
 	}
 	if(!mes)
 	{	
-//		InfoOperation fo;
-//		fo.func=TASK_COPY;
-//		ProcessCopyFiles(PanelGetDestDir(),&fo);
 		ExternalFileCopy(getuid(),TASK_COPY);
 	}
+}
+
+//-----------------------------------------------------------------------------
+
+void OnButtonMove( GtkButton* button, int index_operation ) 
+{
+	ExternalFileCopy(getuid(),TASK_MOVE);
 }
 
 //-----------------------------------------------------------------------------

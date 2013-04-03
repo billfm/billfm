@@ -1,6 +1,7 @@
 #define		PATH_CACHE_ARCHIVE			"/tmp/billfm/cache"
 #define		PATH_INFO_LOG				"/tmp/billfm/log/info.txt"
 #define		PATH_INFO_PROGRESS			"/tmp/billfm/log/progress.txt"
+#define		PATH_INFO_FIND				"/tmp/billfm/log/find.txt"
 #define		PATH_FIND					"/tmp/billfm/find"
 
 
@@ -177,3 +178,5 @@ int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest);
 extern gchar * util_path;
 extern gchar * app_path;
 extern gchar * config_path;
+void DrawProgress(void);
+void InitExtUtils(void);

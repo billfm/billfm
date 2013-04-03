@@ -17,10 +17,12 @@
 #include "utils.h"
 #include "fsmonitor.h"
 
+
 int SelectedSidePanel;
-GtkProgressBar* ProgressBarCommon;
-static pthread_mutex_t BusyProgress;
-static void * ThreadProgress(void * arg);
+
+GtkProgressBar* ProgressBar;
+GtkProgressBar* PulseBar;
+
 
 static gchar * menu_path;
 gchar * app_path;
@@ -68,13 +70,8 @@ gboolean OnSecondTimer(gpointer data);
 int path_entry_try_load(const char * fullname);
 
 void * ThreadCopy(void * arg);
-void DrawProgress(void);
+
 //-----------------------------------------------------------------------------
-/*
-ёйцукенгшщзхъфывапролджэячсмитьбю
-ЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ
-qwertyuiopasdfghjklzxcvbnm
-QWERTYUIOPASDFGHJKLZXCVBNM*/
 
 gchar * utf8toupper(const char * s)
 {
@@ -402,8 +399,8 @@ void InitFolder(gchar * argv0)
 	ClassString str=g_path_get_dirname(PATH_INFO_LOG);
 	CreateDirInDir(str.s);
 	mknod(PATH_INFO_LOG,010777,0);
-//	int log_id=open(PATH_INFO_LOG,O_RDONLY);	
-	mknod(PATH_INFO_PROGRESS,010777,0);	
+//	mknod(PATH_INFO_PROGRESS,010777,0);
+	mknod(PATH_INFO_FIND,010777,0);		
 
 	config_path=g_strdup_printf("%s/.config/billfm",g_get_home_dir());
 
@@ -611,6 +608,7 @@ void DrawPathButton(const char * path, int save_path)
 
 int main( int    argc, char **argv )
 {
+    g_thread_init(NULL);
 	gtk_init( &argc, &argv );
 	InitFolder(argv[0]);
 	
@@ -668,7 +666,11 @@ int main( int    argc, char **argv )
 
 	Panels[0]->SetNotActive();
 
-	ProgressBarCommon=(GtkProgressBar *)gtk_builder_get_object( builder, "progressbar1" );
+	ProgressBar=(GtkProgressBar *)gtk_builder_get_object( builder, "progressbar1" );
+	PulseBar=(GtkProgressBar *)gtk_builder_get_object( builder, "progressbar2" );	
+    gtk_progress_bar_pulse(PulseBar);
+	gtk_widget_hide((GtkWidget*)ProgressBar);
+	gtk_widget_hide((GtkWidget*)PulseBar);
 	
 	gtk_window_set_title(GTK_WINDOW(topWindow), "Bill-file-manager");
 
@@ -678,11 +680,7 @@ int main( int    argc, char **argv )
 	OnMenuSidePanel(0,0);
 
 	InitDropbox();
-
-	pthread_t thread_id;
-	pthread_mutex_init(&BusyProgress,NULL);
-	pthread_create(&thread_id, NULL,ThreadProgress,0);
-
+    InitExtUtils();
 	g_timeout_add_seconds(1,OnSecondTimer,NULL);
 
 	gtk_main();
@@ -755,70 +753,8 @@ void MountGvfsArchive(void)
 
 void	OnButtonTest( GtkButton* button, int index_operation )
 {
-
+	gtk_widget_hide((GtkWidget*)ProgressBar);
+	gtk_widget_hide((GtkWidget*)PulseBar);	
 }
 
-//------------------------------------------------------------------------------
-float progress_value;
-
-void DrawProgress(void)
-{
-	ClassString str;
-	pthread_mutex_lock(&BusyProgress);	
-    double value=progress_value;
-	progress_value=0;
-	pthread_mutex_unlock(&BusyProgress);	
-
-	if(value==1.0)
-	{	
-		str=g_strdup_printf("Выполнено");
-	}	
-	 else
-	{	
-		str=g_strdup_printf("%3.1f",(value*100));
-	}	
-    gtk_progress_bar_set_text(ProgressBarCommon,str.s);
-	gtk_progress_bar_update(ProgressBarCommon,value);
-
-	if(value>0)
-	{	
-		gtk_widget_show((GtkWidget*)ProgressBarCommon);
-	} else
-	{	
-		gtk_widget_hide((GtkWidget*)ProgressBarCommon);
-	}	
-}
-
-//------------------------------------------------------------------------------
-
-static void * ThreadProgress(void * arg)
-{
-    long int all=1;
-    long int done=0;	
-//	printf("Value=%f\n",value);
-	int progress_id=open(PATH_INFO_PROGRESS,O_RDONLY);	
-	int len;
-	char buf[128];
-
-//	while(progress_id>0)
-	while(1)
-	{		
-//		printf("Value while =%f\n",progress_value);
-		int size=read(progress_id,&buf[len],1);
-    	if(size>0)
-		{	
-		  	len+=size;
-			if(buf[len-1]=='\n')
-		    { 
-		      buf[len-1]=0;
-//		      printf("%s\n",buf);
-			  sscanf(buf,"%ld %ld",&done,&all);	
-		      len=0;
-		    } 
-			pthread_mutex_lock(&BusyProgress);	
-			progress_value=double(done)/all;
-			pthread_mutex_unlock(&BusyProgress);	
-		} else sleep(1);
-	}
-	return 0;
-}
+//-----------------------------------------------------------------------------

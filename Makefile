@@ -4,11 +4,11 @@ CFLAGS=-Wall -g `pkg-config --cflags gtk+-2.0 gmodule-2.0 exo-0.3`
 
 billfm: billfm.o trash.o mime.o panels.o on_button.o exopanel.o treepanel.o sidepanel.o override.o\
  ptk-clipboard.o path-entry.o input-dialog.o icon-cell-renderer.o utils.o disks.o setting.o\
- fileprop.o dropbox.o fsmonitor.o mainmenu.o bufgets.o\
+ fileprop.o dropbox.o fsmonitor.o mainmenu.o bufgets.o extutils.o\
 
 	$(CC) $(LDLIBS) -o billfm billfm.o trash.o mime.o panels.o on_button.o exopanel.o treepanel.o\
 	 sidepanel.o override.o ptk-clipboard.o path-entry.o input-dialog.o icon-cell-renderer.o\
-	 utils.o disks.o fileprop.o dropbox.o fsmonitor.o setting.o mainmenu.o bufgets.o
+	 utils.o disks.o fileprop.o dropbox.o fsmonitor.o setting.o mainmenu.o bufgets.o extutils.o
 
 bufgets.o: bufgets.cpp
 	$(CC) $(CFLAGS) -c bufgets.cpp
@@ -69,6 +69,9 @@ icon-cell-renderer.o: icon-cell-renderer.cpp
 
 utils.o: utils.cpp
 	$(CC) $(CFLAGS) -c utils.cpp
+
+extutils.o: extutils.cpp
+	$(CC) $(CFLAGS) -c extutils.cpp
 
 disks.o: disks.cpp
 	$(CC) $(CFLAGS) -c disks.cpp

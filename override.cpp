@@ -336,44 +336,21 @@ int DialogCopy(int task, const char * dest, GList * l)
     	gtk_window_set_title(GTK_WINDOW(dialog), "Копировать файлы");
 	else 
     	gtk_window_set_title(GTK_WINDOW(dialog), "Перемещать файлы");
-/*
-	GtkWidget *radio1=0, *radio2=0, *radio3=0, *box=0;
-	box = (GtkWidget *)gtk_builder_get_object( builder, "vbox2");
-	if(box)
-	{	
-		radio1 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
-							"Создать на старый источник (-l) (default)");
-		g_signal_connect(G_OBJECT(radio1),"clicked",G_CALLBACK(OnCheckedClick),(void*)1);
-   
-    	radio2 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
-                            "Сохранить как есть (-P)");
-   		g_signal_connect(G_OBJECT(radio2),"clicked",G_CALLBACK(OnCheckedClick),(void*)2);
 
-		if(task==TASK_COPY) 
-		{	
-		   	radio3 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
-								"Копировать файл по ссылке ");
-			g_signal_connect(G_OBJECT(radio3),"clicked",G_CALLBACK(OnCheckedClick),(void*)3);
-		}	
-		
-		gtk_box_pack_start (GTK_BOX (box), radio1, TRUE, TRUE, 2);
-		gtk_box_pack_start (GTK_BOX (box), radio2, TRUE, TRUE, 2);
-		if(task==TASK_COPY) 
-		{	
-			gtk_box_pack_start (GTK_BOX (box), radio3, TRUE, TRUE, 2);	
-		}
-		
-		gtk_widget_show_all ((GtkWidget*) dialog);
-	}
-   
-*/
 	int res=gtk_dialog_run (dialog);
-    if(dialog)	gtk_widget_destroy( (GtkWidget*) dialog );
+    if(dialog)
+	{	
+		gtk_widget_hide((GtkWidget*)dialog);	
+		gtk_widget_destroy((GtkWidget*)dialog);
+	}	
 
-	InfoOperation fo;
-	fo.func=task;
-	fo.mode_link=ModeCopyLink;
-	if(res==1) ProcessCopyFiles(dest,&fo);
+	if(res==1)
+	{	
+		InfoOperation fo;
+		fo.func=task;
+		fo.mode_link=ModeCopyLink;
+		ProcessCopyFiles(dest,&fo);
+	}	
 	return res;
 }	
 	

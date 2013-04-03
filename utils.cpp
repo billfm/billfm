@@ -473,68 +473,6 @@ int CreateWriteDir(const char * source, gchar ** dest)
 }
 
 //-----------------------------------------------------------------------------
- 
-void ExternalFileCopy(uid_t user,int operation)
-{
-	GList * l=PanelGetSelected();
-	const char * dest_dir=PanelGetDestDir();
-
-	ClassString com;	
-	if(user!=getuid())
-	{	
-		com=g_strdup_printf("gksudo %s &",util_path);
-	} else	
-	{	
-		com=g_strdup_printf("%s &",util_path);
-	}	
-
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
-	if(operation==TASK_COPY)	fprintf(f,"COPY\n"); else
-	if(operation==TASK_MOVE)	fprintf(f,"MOVE\n");
-
-	fprintf(f,"%s\n",dest_dir);
-
-	for ( ; l; l = l->next )
-	{
-		const char* source = (const char*) l->data;
-		fprintf(f,"%s\n",source);
-	}
-	fclose(f);
-	system(com.s);
-	system("sudo -K"); 	
-}
-
-//-----------------------------------------------------------------------------
- 
-void ExternalCreateDir(const char * dest_dir)
-{
-	ClassString com=g_strdup_printf("gksudo %s &",util_path);
-
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
-	fprintf(f,"CREATE_DIR\n");
-	fprintf(f,"%s\n",dest_dir);
-
-	fclose(f);
-	system(com.s);
-	system("sudo -K"); 	
-}
-
-//-----------------------------------------------------------------------------
- 
-void ExternalClearTrash(const char * dest_dir)
-{
-	ClassString com=g_strdup_printf("gksudo %s &",util_path);
-	
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
-	fprintf(f,"CLEAR_TRASH\n");
-	fprintf(f,"%s\n",dest_dir);
-
-	fclose(f);
-	system(com.s);
-	system("sudo -K"); 	
-}
-
-//-----------------------------------------------------------------------------
 
 int InfoOperation::Lstat_source(const char *file_name, const char * mes)
 {
@@ -699,6 +637,7 @@ static void ParserDir(const char * source,  const char * dest, InfoOperation * f
 	{
 		if( !S_ISREG(fo->source_mode) 
 		 && !S_ISLNK(fo->source_mode)
+		 && !S_ISFIFO(fo->source_mode)		   
 		 && !S_ISSOCK(fo->source_mode)		   
 		   )
 		{
@@ -739,22 +678,6 @@ void UtilsCreateLink(const char * source, const char * dest_dir)
     	           source,link_name.s,errno,strerror(errno));
 		printf("%s\n",mes.s);
 	}
-}
-
-//-----------------------------------------------------------------------------
-
-void ExternalFind(const char * mask,const char * text, const char * dest_dir)
-{
-	ClearDir(PATH_FIND);
-	ClassString com=g_strdup_printf("%s &",util_path);
-
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
-	fprintf(f,"FIND\n");
-	fprintf(f,"%s\n",dest_dir);
-	fprintf(f,"%s\n",mask);
-	fprintf(f,"%s\n",text);	
-	fclose(f);
-	system(com.s);
 }
 
 //-----------------------------------------------------------------------------
@@ -830,20 +753,6 @@ int CreateNewSymlink(const char * link, const char * dest)
 		return errno;
 	}	
 	return 0;
-}
-
-//-----------------------------------------------------------------------------
-
-void ExternalListTar(const char * fullname, const char * dest_dir)
-{
-	CreateDirInDir(dest_dir);
-	ClassString com=g_strdup_printf("%s &",util_path);
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
-	fprintf(f,"READ_TAR\n");
-	fprintf(f,"%s\n",dest_dir);
-	fprintf(f,"%s\n",fullname);
-	fclose(f);
-	system(com.s);
 }
 
 //-----------------------------------------------------------------------------
@@ -972,23 +881,27 @@ void ProcessCopyFiles(const char * dest_dir, InfoOperation * fo)
 	GList * l=PanelGetSelected();
     InfoDir(l);
 	fo->all_size=all_size;
-    fo->progress = open(PATH_INFO_PROGRESS,O_WRONLY);
-	FileOperation1(l,dest_dir,fo);		
+	fo->progress = open(PATH_INFO_PROGRESS,O_WRONLY);
+//	lseek(fo->progress,0,0);
+	FileOperation1(l,dest_dir,fo);
+    sleep(3);
+	close(fo->progress);
 }
 
 //-----------------------------------------------------------------------------
 
 int LowFileCopy(const char * source, const char * dest, long int size, InfoOperation * fo)
 {
-
-#define READ_BUFFER 4096
+	int max_frac;
+	int frac;
+	char mes[128];
+#define READ_BUFFER 4096*4
 	char buf[READ_BUFFER];
 	FILE *  fs=0;
 	FILE *  fd=0;
 	long int i=0;
 	int n;
 	
-start:
 	fs=fopen(source,"r");
 	if(!fs)
 	{
@@ -1007,7 +920,8 @@ start:
 		goto error;
 	}	
 
-
+	max_frac=size/100;
+	frac=0;
 	while(i<size)
 	{
 		if(size-i>READ_BUFFER) n=READ_BUFFER; else n=size-i;
@@ -1031,14 +945,23 @@ start:
 //			return 1;		
 		}	
 		i+=n;
-        if(fo->progress>0)
-		{
-			char buf[128];
-			sprintf(buf,"%ld %ld\n",i,size);
-//			printf("%s",buf);
-			write(fo->progress,buf,strlen(buf));                          
-		}	
+		frac+=n;
+		if(frac>=max_frac)
+		{	
+			frac=0;
+			if(fo->progress>0)
+			{
+				sprintf(mes,"%ld %ld\n",i,size);
+				write(fo->progress,mes,strlen(mes));                          
+			}
+		}
 	}
+
+	if(fo->progress>0)
+	{
+		sprintf(mes,"%ld %ld\n",size,size);
+		write(fo->progress,mes,strlen(mes));                          
+	}	
 
 	fclose(fd);
 	fclose(fs);
@@ -1048,9 +971,7 @@ start:
 error:
 	if(fd) fclose(fd);
 	if(fs) fclose(fs);
-	ClassString mes = g_strdup_printf("Пробовать еще раз ?");
-	if(!DialogYesNo(mes.s)) return 1;
-	goto start;
+	return 1;
 #undef READ_BUFFER
 }
 

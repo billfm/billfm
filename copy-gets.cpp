@@ -25,6 +25,7 @@ int CountReadStrings;
 int PrintTar(const char * buf);
 int PrintZip(const char * buf);
 int PrintRar(const char * buf);
+void LoadSearch(const char * mask,const char * text,const char * dest_dir);
 
 //------------------------------------------------------------------------------
 
@@ -74,28 +75,6 @@ void UtilsCreateLink2(const char * source, const char * dest_dir)
     	           source,link_name.s,errno,strerror(errno));
 		printf("%s\n",mes.s);
 	}
-}
-
-//------------------------------------------------------------------------------
-
-
-void LoadSearch(const char * mask,const char * text,const char * dest_dir)
-{
-	FILE *read_fp;
-	#define		SIZE_BUF		1024 
-	char buffer[SIZE_BUF];
-
-	ClassString com = g_strdup_printf("find %s -mindepth 0 -type f -name '%s' | xargs grep -l \"%s\" ",
-	                                  dest_dir, mask, text );        
-	read_fp = popen(com.s, "r");
-	
-	while(fgets(buffer, SIZE_BUF, read_fp))
-	{
-		buffer[strlen(buffer)-1]=0;
-		UtilsCreateLink(buffer,tmp);
-	}
-
-	pclose(read_fp);   
 }
 
 //------------------------------------------------------------------------------
@@ -162,7 +141,7 @@ int main( int    argc, char **argv )
 
  if(!strcmp(buffer,"MOVE"))
  {
-   operation=TASK_COPY;
+   operation=TASK_MOVE;
  } else 
  if(!strcmp(buffer,"COPY"))
  {
@@ -475,5 +454,36 @@ int PrintRar(const char * buf)
 
 	return 0;
 } 
+
+//------------------------------------------------------------------------------
+
+void LoadSearch(const char * mask,const char * text,const char * dest_dir)
+{
+	char buf[128];
+	int progress=open(PATH_INFO_FIND,O_WRONLY);
+	sprintf(buf,"%d %d\n",0,1);
+	write(progress,buf,strlen(buf));                          
+
+	FILE *read_fp;
+	#define		SIZE_BUF		1024 
+	char buffer[SIZE_BUF];
+
+	ClassString com = g_strdup_printf("find %s -mindepth 0 -type f -name '%s' | xargs grep -l \"%s\" ",
+	                                  dest_dir, mask, text );        
+	read_fp = popen(com.s, "r");
+	int count=0; 	
+	while(fgets(buffer, SIZE_BUF, read_fp))
+	{
+		buffer[strlen(buffer)-1]=0;
+		UtilsCreateLink(buffer,tmp);
+		count++;
+	}
+
+	pclose(read_fp);   
+	sprintf(buf,"%d %d\n",count,count);
+	write(progress,buf,strlen(buf));                          
+	close(progress);
+	printf("End search - %d\n",count);
+}
 
 //------------------------------------------------------------------------------
