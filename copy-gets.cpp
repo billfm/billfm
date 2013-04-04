@@ -25,7 +25,7 @@ int CountReadStrings;
 int PrintTar(const char * buf);
 int PrintZip(const char * buf);
 int PrintRar(const char * buf);
-void LoadSearch(const char * mask,const char * text,const char * dest_dir);
+void LoadSearch(const char * mask,const char * text,const char * dest_dir,const char * mode);
 
 //------------------------------------------------------------------------------
 
@@ -202,7 +202,9 @@ int main( int    argc, char **argv )
 		const char * mask =g_strdup(buffer);
 		NexString();
 		const char * text =g_strdup(buffer);
-		LoadSearch(mask,text,DestDir);
+		NexString();
+		const char * mode =g_strdup(buffer);
+		LoadSearch(mask,text,DestDir,mode);
 	} else
 	if(operation==TASK_SMB_MOUNT)
 	{
@@ -457,8 +459,50 @@ int PrintRar(const char * buf)
 
 //------------------------------------------------------------------------------
 
-void LoadSearch(const char * mask,const char * text,const char * dest_dir)
+void UtilsCreateLink1(const char * source, const char * dest_dir)
 {
+	ClassString link_name = g_path_get_basename(source);
+	link_name =g_build_filename(dest_dir,link_name.s, NULL );
+	if(!symlink(source,link_name.s)) return;
+
+	if(errno!=17)		
+	{
+		ClassString mes = g_strdup_printf("Error create link :\n Source file '%s'\n Link name '%s' \n Error (%d) '%s'",
+	           source,link_name.s,errno,strerror(errno));
+		printf("%s\n",mes.s);
+		return;
+	}
+
+	char * new_name=g_strdup(source);
+	char * p=new_name+1;
+	while(*p)
+	{
+		if(*p=='/') *p='_';
+		p++;
+	}
+
+	link_name =g_build_filename(dest_dir,new_name, NULL );
+	if(symlink(source,link_name.s))
+	{   
+		ClassString mes = g_strdup_printf("Error create link :\n Source file '%s'\n Link name '%s' \n Error (%d) '%s'",
+    	           source,link_name.s,errno,strerror(errno));
+		printf("%s\n",mes.s);
+	}
+
+	g_free(new_name);
+}
+
+//------------------------------------------------------------------------------
+
+void LoadSearch(const char * mask,const char * text,const char * dest_dir, const char * _mode)
+{
+	printf("%s\n",_mode);
+	int mode=0;
+	if(!strcmp(_mode,"FOLDER"))
+	{
+		mode=1;
+	}
+
 	char buf[128];
 	int progress=open(PATH_INFO_FIND,O_WRONLY);
 	sprintf(buf,"%d %d\n",0,1);
@@ -475,7 +519,8 @@ void LoadSearch(const char * mask,const char * text,const char * dest_dir)
 	while(fgets(buffer, SIZE_BUF, read_fp))
 	{
 		buffer[strlen(buffer)-1]=0;
-		UtilsCreateLink(buffer,tmp);
+		if(mode) UtilsCreateLink2(buffer,tmp); else
+			UtilsCreateLink1(buffer,tmp);
 		count++;
 	}
 

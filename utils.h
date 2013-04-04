@@ -158,7 +158,7 @@ void ShowWarning(gchar * str);
 long int GetSizeDir(const char * source);
 int DialogCopy(int task, const char * dest, GList * l);
 void UtilsCreateLink(const char * source, const char * dest_dir);
-void ExternalFind(const char * mask,const char * text, const char * dest_dir);
+void ExternalFind(const char * mask,const char * text, const char * dest_dir, int mode);
 gchar * utf8tolower(const char * s);
 gchar * utf8toupper(const char * s);
 gchar * Link2File(const char * fullname);

@@ -13,6 +13,7 @@
 
 GtkListStore * SearchMaskStore;
 GtkListStore * SearchTextStore;
+GtkListStore * SearchModeStore;
 
 //-------------------------------------------------------------------------------------------------
 
@@ -203,84 +204,6 @@ gchar * NewPattern(void)
 
 //-----------------------------------------------------------------------------
 
-void NewSearch(const char * workdir)
-{
-    GtkLabel* prompt;
-    GtkWidget* dlg;
-	GtkWidget* box;
-    GtkTreeIter      iter;
-	
-	dlg = gtk_dialog_new_with_buttons( _("Find files"),
-                                       NULL,
-                                       (GtkDialogFlags)0,
-                                       GTK_STOCK_CANCEL,
-                                       GTK_RESPONSE_CANCEL,
-                                       GTK_STOCK_OK,
-                                       GTK_RESPONSE_OK,
-	                                   NULL );
-	
-    gtk_dialog_set_alternative_button_order( GTK_DIALOG(dlg), GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL, -1 );
-
-    box = ( ( GtkDialog* ) dlg )->vbox;
-    prompt = (GtkLabel* ) gtk_label_new(_( "Input a mask file:" ));
-    gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
-
-    if(!SearchMaskStore)
-	{	
-		SearchMaskStore=gtk_list_store_new(1, G_TYPE_STRING);
-		gtk_list_store_append( SearchMaskStore, &iter );
-		gtk_list_store_set( SearchMaskStore, &iter, 0, "*.cpp", -1 );
-		gtk_list_store_append( SearchMaskStore, &iter );
-		gtk_list_store_set( SearchMaskStore, &iter, 0, "*.c", -1 );
-		gtk_list_store_append( SearchMaskStore, &iter );
-		gtk_list_store_set( SearchMaskStore, &iter, 0, "*.*", -1 );
-		gtk_list_store_append( SearchMaskStore, &iter );
-		gtk_list_store_set( SearchMaskStore, &iter, 0, "*", -1 );
-	}	
-    if(!SearchTextStore)
-	{	
-		SearchTextStore=gtk_list_store_new(1, G_TYPE_STRING);
-	}	
-
-	GtkWidget* EntryMask = gtk_combo_box_entry_new_with_model(GTK_TREE_MODEL(SearchMaskStore),0);
-   	gtk_box_pack_start( GTK_BOX( box ), EntryMask, FALSE, FALSE, 4 );
-	gtk_tree_model_get_iter_first ((GtkTreeModel*)SearchMaskStore, &iter);	
-    gtk_combo_box_set_active_iter( (GtkComboBox*)EntryMask, &iter  );	
-
-	box = ( ( GtkDialog* ) dlg )->vbox;
-    prompt = (GtkLabel* ) gtk_label_new(_( "Input a text :" ));
-    gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
-
-    GtkWidget* EntryText = gtk_combo_box_entry_new_with_model(GTK_TREE_MODEL(SearchTextStore),0);
-    gtk_box_pack_start( GTK_BOX( box ), EntryText, FALSE, FALSE, 4 );
-	if(gtk_tree_model_get_iter_first ((GtkTreeModel*)SearchTextStore, &iter))
-	{
-	    gtk_combo_box_set_active_iter( (GtkComboBox*)EntryText, &iter  );
-	}
-	
-    gtk_dialog_set_default_response( ( GtkDialog* ) dlg, GTK_RESPONSE_OK );
-    gtk_widget_show_all( box );
-
-	/* end create elements */
-	while ( gtk_dialog_run( GTK_DIALOG( dlg ) ) == GTK_RESPONSE_OK )
-    {
-	    gchar * mask = gtk_combo_box_get_active_text((GtkComboBox*)EntryMask );
-		gchar * text = gtk_combo_box_get_active_text((GtkComboBox*)EntryText );
-        InsertNewMask(mask);
-        InsertNewText(text);
-		ExternalFind(mask,text,Panels[ActivePanel]->get_path());
-		Panels[1-ActivePanel]->LoadDir("/tmp/billfm/find");
-		g_free(mask);
-		g_free(text);		
-		break;
-    }
-
-	gtk_widget_destroy( dlg );
-
-}
-
-//-----------------------------------------------------------------------------
-
 void CreateNewFileDialog(const char * workdir,const char * command)
 {
     const char* file_name;
@@ -334,5 +257,118 @@ void CreateNewFileDialog(const char * workdir,const char * command)
 
 }
 
+
+//-----------------------------------------------------------------------------
+
+void NewSearch(const char * workdir)
+{
+	int mode;
+	GtkLabel* prompt;
+    GtkWidget* dlg;
+	GtkWidget* box;
+    GtkTreeIter      iter;
+	
+	dlg = gtk_dialog_new_with_buttons( _("Find files"),
+                                       NULL,
+                                       (GtkDialogFlags)0,
+                                       GTK_STOCK_CANCEL,
+                                       GTK_RESPONSE_CANCEL,
+                                       GTK_STOCK_OK,
+                                       GTK_RESPONSE_OK,
+	                                   NULL );
+	
+    gtk_dialog_set_alternative_button_order( GTK_DIALOG(dlg), GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL, -1 );
+
+    box = ( ( GtkDialog* ) dlg )->vbox;
+    prompt = (GtkLabel* ) gtk_label_new(_( "Input a mask file:" ));
+    gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
+
+    if(!SearchMaskStore)
+	{	
+		SearchMaskStore=gtk_list_store_new(1, G_TYPE_STRING);
+		gtk_list_store_append( SearchMaskStore, &iter );
+		gtk_list_store_set( SearchMaskStore, &iter, 0, "*.cpp", -1 );
+		gtk_list_store_append( SearchMaskStore, &iter );
+		gtk_list_store_set( SearchMaskStore, &iter, 0, "*.c", -1 );
+		gtk_list_store_append( SearchMaskStore, &iter );
+		gtk_list_store_set( SearchMaskStore, &iter, 0, "*.*", -1 );
+		gtk_list_store_append( SearchMaskStore, &iter );
+		gtk_list_store_set( SearchMaskStore, &iter, 0, "*", -1 );
+	}	
+    if(!SearchModeStore)
+	{	
+		SearchModeStore=gtk_list_store_new(1, G_TYPE_STRING);
+		gtk_list_store_append( SearchModeStore, &iter );
+		gtk_list_store_set( SearchModeStore, &iter, 0, "Folders", -1 );
+		gtk_list_store_append( SearchModeStore, &iter );
+		gtk_list_store_set( SearchModeStore, &iter, 0, "List", -1 );
+	}	
+		
+	if(!SearchTextStore)
+	{	
+		SearchTextStore=gtk_list_store_new(1, G_TYPE_STRING);
+	}	
+
+	GtkWidget* EntryMask = gtk_combo_box_entry_new_with_model(GTK_TREE_MODEL(SearchMaskStore),0);
+   	gtk_box_pack_start( GTK_BOX( box ), EntryMask, FALSE, FALSE, 4 );
+	gtk_tree_model_get_iter_first ((GtkTreeModel*)SearchMaskStore, &iter);	
+    gtk_combo_box_set_active_iter( (GtkComboBox*)EntryMask, &iter  );	
+
+	box = ( ( GtkDialog* ) dlg )->vbox;
+    prompt = (GtkLabel* ) gtk_label_new(_( "Input a text :" ));
+    gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
+
+    GtkWidget* EntryText = gtk_combo_box_entry_new_with_model(GTK_TREE_MODEL(SearchTextStore),0);
+    gtk_box_pack_start( GTK_BOX( box ), EntryText, FALSE, FALSE, 4 );
+	if(gtk_tree_model_get_iter_first ((GtkTreeModel*)SearchTextStore, &iter))
+	{
+	    gtk_combo_box_set_active_iter( (GtkComboBox*)EntryText, &iter  );
+	}
+	
+    gtk_dialog_set_default_response( ( GtkDialog* ) dlg, GTK_RESPONSE_OK );
+
+	prompt = (GtkLabel* ) gtk_label_new(_( "Отображать ввиде" ));
+    gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
+
+	GtkWidget* EntryMode = gtk_combo_box_entry_new_with_model(GTK_TREE_MODEL(SearchModeStore),0);
+    gtk_box_pack_start( GTK_BOX( box ), EntryMode, FALSE, FALSE, 4 );
+	if(gtk_tree_model_get_iter_first ((GtkTreeModel*)SearchModeStore, &iter))
+	{
+	    gtk_combo_box_set_active_iter( (GtkComboBox*)EntryMode, &iter  );
+	}
+
+	gtk_widget_show_all( box );
+
+	/* end create elements */
+	while ( gtk_dialog_run( GTK_DIALOG( dlg ) ) == GTK_RESPONSE_OK )
+    {
+	    gchar * mask = gtk_combo_box_get_active_text((GtkComboBox*)EntryMask);
+		gchar * text = gtk_combo_box_get_active_text((GtkComboBox*)EntryText);
+		gchar * smode = gtk_combo_box_get_active_text((GtkComboBox*)EntryMode);		
+        InsertNewMask(mask);
+        InsertNewText(text);
+        mode=!strcmp(smode,"Folders");
+		ExternalFind(mask,text,Panels[ActivePanel]->get_path(),mode);
+
+		ClassString dest;
+		if(mode)
+		{	
+			dest = g_build_filename(PATH_FIND,workdir, NULL );
+			CreateDirInDir(dest.s);
+		} else
+		{
+			dest = g_build_filename(PATH_FIND, NULL );
+		}
+
+		Panels[1-ActivePanel]->LoadDir(dest.s);
+		g_free(mask);
+		g_free(text);
+		g_free(smode);
+		break;
+    }
+
+	gtk_widget_destroy( dlg );
+
+}
 
 //-----------------------------------------------------------------------------
