@@ -392,7 +392,9 @@ gboolean  OnButtonPressedSidePanel (GtkWidget *treeview, GdkEventButton *event, 
 
 void ClassSidePanel::ScanDiskByLabel(GtkListStore * store)
 {
-    InitListDisk();
+	ClassString uid=g_strdup_printf("%d",geteuid());
+	InitListDisk(g_get_home_dir(),uid.s);
+
 	GtkTreeIter   iter;
 	InfoDisk * info;
 

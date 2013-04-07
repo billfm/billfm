@@ -168,6 +168,7 @@ int CreateDirInDir(const char * dest);
 
 typedef int (*func_for_gets)(const char * buf); 
 void LoadGets(const char * fullname, func_for_gets func);
+void CommandGets(const char * com, func_for_gets func);
 void ExternalListTar(const char * fullname, const char * dest_dir);
 int CreateNewSymlink(const char * link, const char * dest);
 gchar * Untar(const char * name,const char * fullname);
@@ -180,3 +181,4 @@ extern gchar * app_path;
 extern gchar * config_path;
 void DrawProgress(void);
 void InitExtUtils(void);
+void ExternalFileCopy4(uid_t user,int operation,GList * l, const char * dest_dir);

@@ -601,17 +601,19 @@ void ClassTreePanel::LoadFromFile(const char * source)
 
 void view_popup_menu_paste (GtkWidget *menuitem, ClassTreePanel * panel)
 {
-	const char * dest_path = Panels[ActivePanel]->get_path();
+	const char * destdir = Panels[ActivePanel]->get_path();
 	int action=GDK_ACTION_COPY;
 	GList* l = ptk_clipboard_paste_files(&action);
 
 	if(action==GDK_ACTION_COPY)
 	{
-		DialogCopy(TASK_COPY,dest_path,l);
+//		DialogCopy(TASK_COPY,dest_path,l);
+		ExternalFileCopy4(getuid(),TASK_COPY,l,destdir);
 	} else
 	if(action==GDK_ACTION_MOVE)
 	{
-		DialogCopy(TASK_MOVE,dest_path,l);
+//		DialogCopy(TASK_MOVE,destdir,l);
+		ExternalFileCopy4(getuid(),TASK_MOVE,l,destdir);		
 	}
 }
 

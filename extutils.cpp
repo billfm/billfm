@@ -83,54 +83,6 @@ void StartProgressBar()
 }
 
 //-----------------------------------------------------------------------------
- 
-void ExternalFileCopy(uid_t user,int operation)
-{
-	GList * l=PanelGetSelected();
-	const char * dest_dir=PanelGetDestDir();
-
-	ClassString com;	
-	if(user!=getuid())
-	{	
-		com=g_strdup_printf("gksudo %s &",util_path);
-	} else	
-	{	
-		com=g_strdup_printf("%s &",util_path);
-	}	
-
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
-	if(operation==TASK_COPY)	fprintf(f,"COPY\n"); else
-	if(operation==TASK_MOVE)	fprintf(f,"MOVE\n");
-
-	fprintf(f,"%s\n",dest_dir);
-
-	for ( ; l; l = l->next )
-	{
-		const char* source = (const char*) l->data;
-		fprintf(f,"%s\n",source);
-	}
-	fclose(f);
-    StartProgressBar();
-	system(com.s);
-	system("sudo -K"); 	
-}
-
-//-----------------------------------------------------------------------------
- 
-void ExternalClearTrash(const char * dest_dir)
-{
-	ClassString com=g_strdup_printf("gksudo %s &",util_path);
-	
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
-	fprintf(f,"CLEAR_TRASH\n");
-	fprintf(f,"%s\n",dest_dir);
-
-	fclose(f);
-	system(com.s);
-	system("sudo -K"); 	
-}
-
-//-----------------------------------------------------------------------------
 
 void ExternalListTar(const char * fullname, const char * dest_dir)
 {
@@ -263,6 +215,64 @@ gpointer ThreadProgress(gpointer _data)
 	printf("end read %s %d\n",buf,size);
 	if(progress_id>0) close(progress_id);
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+ 
+void ExternalClearTrash(const char * dest_dir)
+{
+	ClassString com=g_strdup_printf("gksudo %s &",util_path);
+	
+	FILE * f=fopen("/tmp/billfm.txt","w+"); 
+	fprintf(f,"CLEAR_TRASH\n");
+	fprintf(f,"%s\n",dest_dir);
+	fprintf(f,"%s\n",g_get_home_dir());
+	fprintf(f,"%d\n",geteuid());	
+
+
+	fclose(f);
+	system(com.s);
+	system("sudo -K"); 	
+}
+
+//-----------------------------------------------------------------------------
+ 
+void ExternalFileCopy4(uid_t user,int operation,GList * l, const char * dest_dir)
+{
+
+	ClassString com;	
+	if(user!=getuid())
+	{	
+		com=g_strdup_printf("gksudo %s &",util_path);
+	} else	
+	{	
+		com=g_strdup_printf("%s &",util_path);
+	}	
+
+	FILE * f=fopen("/tmp/billfm.txt","w+"); 
+	if(operation==TASK_COPY)	fprintf(f,"COPY\n"); else
+	if(operation==TASK_MOVE)	fprintf(f,"MOVE\n");
+
+	fprintf(f,"%s\n",dest_dir);
+
+	for ( ; l; l = l->next )
+	{
+		const char* source = (const char*) l->data;
+		fprintf(f,"%s\n",source);
+	}
+	fclose(f);
+    StartProgressBar();
+	system(com.s);
+	system("sudo -K"); 	
+}
+
+//-----------------------------------------------------------------------------
+ 
+void ExternalFileCopy(uid_t user,int operation)
+{
+	GList * l=PanelGetSelected();
+	const char * dest_dir=PanelGetDestDir();
+	ExternalFileCopy4(user,operation,l,dest_dir);
 }
 
 //-----------------------------------------------------------------------------

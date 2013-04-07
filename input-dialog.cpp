@@ -372,3 +372,48 @@ void NewSearch(const char * workdir)
 }
 
 //-----------------------------------------------------------------------------
+
+gchar * InputPassword()
+{
+	GtkWidget* dlg = gtk_dialog_new_with_buttons("Input password" ,
+                                       NULL,
+                                       (GtkDialogFlags)0,
+                                       GTK_STOCK_CANCEL,
+                                       GTK_RESPONSE_CANCEL,
+                                       GTK_STOCK_OK,
+                                       GTK_RESPONSE_OK,
+	                                   NULL );
+	
+    gtk_dialog_set_alternative_button_order( GTK_DIALOG(dlg), GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL, -1 );
+
+    GtkWidget* box = ( ( GtkDialog* ) dlg )->vbox;
+    GtkLabel* prompt = (GtkLabel*)gtk_label_new(  "Please input password:"  );
+    gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
+
+    GtkWidget* entry = (GtkWidget*) gtk_entry_new();
+    gtk_entry_set_text( GTK_ENTRY( entry ), "");
+    gtk_box_pack_start( GTK_BOX( box ), entry, FALSE, FALSE, 4 );
+
+    gtk_dialog_set_default_response( ( GtkDialog* ) dlg, GTK_RESPONSE_OK );
+    gtk_entry_set_activates_default ( GTK_ENTRY( entry ), TRUE );
+
+    gtk_widget_show_all( box );
+
+    gtk_window_set_default_size( GTK_WINDOW( dlg ), 360, -1 );
+    gtk_widget_show( dlg );
+
+    while ( gtk_dialog_run( GTK_DIALOG( dlg ) ) == GTK_RESPONSE_OK )
+    {
+        const char * newname = gtk_entry_get_text((GtkEntry*)entry);
+        if ( newname )
+        {
+			newname=g_strdup(newname);
+			gtk_widget_destroy( dlg );
+			return (gchar*)newname;
+        }
+    }//while
+	gtk_widget_destroy( dlg );
+	return NULL;
+}
+
+//-----------------------------------------------------------------------------

@@ -285,77 +285,6 @@ static void OnCheckedClick( GtkButton* button, int res )
 
 //-----------------------------------------------------------------------------
 
-int DialogCopy(int task, const char * dest, GList * l)
-{
-    ModeCopyLink=1;
-	GtkBuilder* builder=CreateForm("copy.glade");
-	if(!builder) return -1;
-
-	ClassString source;
-	if(task==TASK_COPY) source=g_strdup("Копировать:"); else source=g_strdup("Переместить:");
-	for ( int i=0; l; l = l->next,i++ )
-	{
-        source=g_strdup_printf("%s\n %s",source.s, (const char*) l->data);
-		if(i>5)
-		{	
-	        source=g_strdup_printf("%s\n ...",source.s);
-			break;
-		}	
-	}
-
-	GtkButton* button;
-
-	const char* items[] =
-    {
-		"Выполнить",
-		"Отменить",
-		0
-	};
-
-	const char *names[] =
-    {
-		"bOk",
-		"bCancel",		
-		0
-	};
-
-	for(int i=0; items[i]; i++)
-	{
-		button = (GtkButton*) gtk_builder_get_object( builder,names[i]);
-		gtk_button_set_label(button,items[i]);
-	}
-
-	GtkLabel * label = (GtkLabel*) gtk_builder_get_object( builder, "label1");
-	ClassString mes=g_strdup_printf("%s\n\n В каталог :\n %s\n",source.s,dest);
-	gtk_label_set_text ((GtkLabel *) label, mes.s);
-
-	dialog = (GtkDialog *) gtk_builder_get_object( builder, "dialog1");	
-	gtk_window_set_keep_above((GtkWindow*) dialog, 1);
-
-	if(task==TASK_COPY) 
-    	gtk_window_set_title(GTK_WINDOW(dialog), "Копировать файлы");
-	else 
-    	gtk_window_set_title(GTK_WINDOW(dialog), "Перемещать файлы");
-
-	int res=gtk_dialog_run (dialog);
-    if(dialog)
-	{	
-		gtk_widget_hide((GtkWidget*)dialog);	
-		gtk_widget_destroy((GtkWidget*)dialog);
-	}	
-
-	if(res==1)
-	{	
-		InfoOperation fo;
-		fo.func=task;
-		fo.mode_link=ModeCopyLink;
-		ProcessCopyFiles(dest,&fo);
-	}	
-	return res;
-}	
-	
-//-----------------------------------------------------------------------------
-
 int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest)
 {
     ModeCopyLink=1;
@@ -434,6 +363,77 @@ int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest)
     if(dialog)	gtk_widget_destroy( (GtkWidget*) dialog );
 	fo->mode_link=ModeCopyLink;
 	return 1;
+}	
+	
+//-----------------------------------------------------------------------------
+
+int DialogCopy(int task, const char * dest, GList * l)
+{
+    ModeCopyLink=1;
+	GtkBuilder* builder=CreateForm("copy.glade");
+	if(!builder) return -1;
+
+	ClassString source;
+	if(task==TASK_COPY) source=g_strdup("Копировать:"); else source=g_strdup("Переместить:");
+	for ( int i=0; l; l = l->next,i++ )
+	{
+        source=g_strdup_printf("%s\n %s",source.s, (const char*) l->data);
+		if(i>5)
+		{	
+	        source=g_strdup_printf("%s\n ...",source.s);
+			break;
+		}	
+	}
+
+	GtkButton* button;
+
+	const char* items[] =
+    {
+		"Выполнить",
+		"Отменить",
+		0
+	};
+
+	const char *names[] =
+    {
+		"bOk",
+		"bCancel",		
+		0
+	};
+
+	for(int i=0; items[i]; i++)
+	{
+		button = (GtkButton*) gtk_builder_get_object( builder,names[i]);
+		gtk_button_set_label(button,items[i]);
+	}
+
+	GtkLabel * label = (GtkLabel*) gtk_builder_get_object( builder, "label1");
+	ClassString mes=g_strdup_printf("%s\n\n В каталог :\n %s\n",source.s,dest);
+	gtk_label_set_text ((GtkLabel *) label, mes.s);
+
+	dialog = (GtkDialog *) gtk_builder_get_object( builder, "dialog1");	
+	gtk_window_set_keep_above((GtkWindow*) dialog, 1);
+
+	if(task==TASK_COPY) 
+    	gtk_window_set_title(GTK_WINDOW(dialog), "Копировать файлы");
+	else 
+    	gtk_window_set_title(GTK_WINDOW(dialog), "Перемещать файлы");
+
+	int res=gtk_dialog_run (dialog);
+    if(dialog)
+	{	
+		gtk_widget_hide((GtkWidget*)dialog);	
+		gtk_widget_destroy((GtkWidget*)dialog);
+	}	
+
+	if(res==1)
+	{	
+		InfoOperation fo;
+		fo.func=task;
+		fo.mode_link=ModeCopyLink;
+		ProcessCopyFiles(dest,&fo);
+	}	
+	return res;
 }	
 	
 //-----------------------------------------------------------------------------

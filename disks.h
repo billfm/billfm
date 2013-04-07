@@ -4,7 +4,7 @@
 #define TYPE_FS_EXT3	3
 #define TYPE_FS_EXT4	4
 
-void InitListDisk(void);
+void InitListDisk(const char * homedir,const char * uid);
 int GetFreeSpace(const char * mount);
 gchar * Dev2Mount(const char * dev);
 gchar * Mount2Dev(const char * mount);

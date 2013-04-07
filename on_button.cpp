@@ -397,6 +397,19 @@ void OnButtonEdit( GtkButton * b, int flags )
 }
 
 //-----------------------------------------------------------------------------
+int flag_password;
+
+static int EchoRar(const char * buf)
+{
+	char key[]="Encrypted file:  CRC failed in";
+//	printf(">%s<\n",buf);
+    if(!strstr(buf,key))
+    {
+		flag_password=1;
+		return 1;
+	}   
+	return 0;
+}
 
 gchar * Untar(const char * name,const char * destdir)
 {
@@ -448,6 +461,7 @@ gchar * Untar(const char * name,const char * destdir)
 	if(IsTar(zip.s))
 	{	
 		com=g_strdup_printf("cd '%s'; tar -x --file='%s' '%s'", unpack_dir,zip.s,inzip.s);
+		system(com.s);
 	}	else
 	if(IsZip(zip.s))
 	{	
@@ -458,16 +472,26 @@ gchar * Untar(const char * name,const char * destdir)
 				com=g_strdup_printf("cd '%s'; unzip -o '%s' '%s/*'", unpack_dir, zip.s, inzip.s);
 			else com=g_strdup_printf("cd '%s'; unzip -o '%s' '%s'", unpack_dir, zip.s, inzip.s);
 		}
+		system(com.s);
 		
 	}	else
 	if(IsRar(zip.s))
 	{	
-		com=g_strdup_printf("cd '%s'; unrar x '%s' '%s'", unpack_dir,zip.s,inzip.s);		
+//		flag_password=0;
+//		CommandGets(com.s,EchoRar);
+		if(inzip.s[0]=='*')
+		{
+			ClassString password=InputPassword();
+			printf("Треба пассворд <%s>\n",password.s);
+			com=g_strdup_printf("cd '%s'; unrar -p'%s' x '%s' '%s'", 
+			                    unpack_dir,password.s,zip.s,&inzip.s[1]);
+			printf("%s\n",com.s);
+		} 	else com=g_strdup_printf("cd '%s'; unrar -p- x '%s' '%s'", unpack_dir,zip.s,inzip.s);			
+		printf("Start unpack:%s \n",com.s);
+		system(com.s);
+		printf("Unpack end \n");	
 	}	else return 0;
 	
-	printf("Unpack %s \n",com.s);
-	system(com.s);
-	printf("Unpack end \n");	
 	cache=g_build_filename(unpack_dir,inzip.s,NULL);
 	if(!destdir)
 	{	

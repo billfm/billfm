@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+
 #include "utils.h"
 #include "disks.h"
 
@@ -162,9 +163,8 @@ void ClearList()
 
 //-----------------------------------------------------------------------------
 
-void InitListDisk(void)
+void InitListDisk(const char * homedir,const char * uid)
 {
-
 	ClearList();
 	FILE * f;
 	char str[1024];
@@ -192,9 +192,9 @@ void InitListDisk(void)
 
 			if(!strcmp("/",info->mount))
 			{ 
-				info->path_trash=g_strdup_printf("%s/.local/share/Trash",g_get_home_dir());
+				info->path_trash=g_strdup_printf("%s/.local/share/Trash",homedir);
 			}
-			else info->path_trash=g_strdup_printf("%s/.Trash-%d",info->mount,geteuid());
+			else info->path_trash=g_strdup_printf("%s/.Trash-%s",info->mount,uid);
 
  			info->path_trash=CheckTrash(info->path_trash);
 		}

@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+
 #include "tree.h"
 #include "disks.h"
 #include "utils.h"
@@ -618,8 +619,8 @@ int main( int    argc, char **argv )
 		Panels[i] = new ClassTreePanel();
 		Panels[i]->MyIndex=i;
 	}	
-
-	InitListDisk();
+	ClassString uid=g_strdup_printf("%d",geteuid());
+	InitListDisk(g_get_home_dir(),uid.s);
 
 	builder=CreateForm("main.glade");
 	if(!builder) return -1;
@@ -750,11 +751,13 @@ void MountGvfsArchive(void)
 }
 
 //-----------------------------------------------------------------------------
+long int GetFreeSpace2(const char * _name);
 
 void	OnButtonTest( GtkButton* button, int index_operation )
 {
-	gtk_widget_hide((GtkWidget*)ProgressBar);
-	gtk_widget_hide((GtkWidget*)PulseBar);	
+	GetFreeSpace2("/media/win_d/JAGER.ZIP");
+//	gtk_widget_hide((GtkWidget*)ProgressBar);
+//	gtk_widget_hide((GtkWidget*)PulseBar);	
 }
 
 //-----------------------------------------------------------------------------

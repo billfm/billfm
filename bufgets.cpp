@@ -37,16 +37,9 @@ char * NewBuf()
 }
 
 //-----------------------------------------------------------------------------
-
-void LoadGets(const char * fullname, func_for_gets func)
+	
+void GetsFromFile(FILE * f, func_for_gets func)
 {
-	FILE * f = fopen(fullname, "r");
-	if(!f) 
-	{
-		printf("Not open %s\n",fullname);
-		return;
-	}
-
 	long pos=0;
 	buf=NewBuf();
 
@@ -68,8 +61,35 @@ void LoadGets(const char * fullname, func_for_gets func)
 		}	
 	}
 
-	fclose(f);
 	ClearBuf();
+}
+
+//-----------------------------------------------------------------------------
+
+void LoadGets(const char * fullname, func_for_gets func)
+{
+	FILE * f = fopen(fullname, "r");
+	if(!f) 
+	{
+		printf("Not open %s\n",fullname);
+		return;
+	}
+	GetsFromFile(f,func);
+	fclose(f);
+}
+
+//-----------------------------------------------------------------------------
+
+void CommandGets(const char * com, func_for_gets func)
+{
+	FILE * f=popen(com, "r");
+	if(!f) 
+	{
+		printf("Not execute %s\n",com);
+		return;
+	}
+	GetsFromFile(f,func);
+	pclose(f);
 }
 
 //-----------------------------------------------------------------------------

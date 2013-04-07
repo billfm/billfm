@@ -15,7 +15,7 @@
 
 char rw_opt[]="iocharset=utf8,codepage=cp866,file_mode=0777,dir_mode=0777,username=quest,password=''";
 char ro_opt[]="iocharset=utf8,codepage=cp866,username=quest,password=''";
-
+int RarPassword;
 GList * list_source=0;
 const char * DestDir;
 const char tmp[]="/tmp/billfm/find";
@@ -128,7 +128,9 @@ int main( int    argc, char **argv )
  int operation=TASK_COPY;
  gtk_init( &argc, &argv );
  
- InitListDisk();
+ ClassString uid=g_strdup_printf("%d",geteuid());
+ InitListDisk(g_get_home_dir(),uid.s);
+
 
  f=fopen("/tmp/billfm.txt","rt"); 
  if(!f)
@@ -193,7 +195,11 @@ int main( int    argc, char **argv )
 	} else
 	if(operation==TASK_CLEAR_TRASH)
 	{
-		InitListDisk();
+		NexString();
+		const char * homedir =g_strdup(buffer);
+		NexString();
+		const char * uid =g_strdup(buffer);
+		InitListDisk(homedir,uid);
 		UtilsClearTrash();
 	} else
 	if(operation==TASK_FIND)
@@ -243,6 +249,7 @@ int main( int    argc, char **argv )
 			system(com.s); 
 			ClassString outfile=g_build_filename(DestDir,"dir.lst",NULL);
 			CountReadStrings=0;
+			RarPassword=0;
 			LoadGets(outfile.s,PrintRar);
 		}
 
@@ -376,89 +383,6 @@ int PrintZip(const char * buf)
 
 //------------------------------------------------------------------------------
 
-int PrintRar(const char * buf)
-{
-//406  1999-10-12 01:27   rxLib567/RX/RxNews.txt
-//  0  2005-04-27 12:07   rxLib567/RX/Units/
-	static gchar * last;
-	if(CountReadStrings==0)
-	{
-		if(buf[0]=='-')
-		{
-			last=0;
-			CountReadStrings=3;
-		}
-		return 0;
-	}
-
-	CountReadStrings++;
-
-	if(buf[0]=='-') return 1;
-
-	if((CountReadStrings&3)==0)
-	{
-		if(last) g_free(last);
-		last=g_strdup(buf);
-//printf("0:%s\n",buf);
-		return 0;
-	} else 
-        if((CountReadStrings&3)==1)
-	{
-	}
-	else
-	{
-		CountReadStrings++;
-		return 0;
-	}
-
-	long int size;
-	gchar * right;
-	gchar * name=last;
-	while(*name==0x20) name++; 
-        struct tm ltm;
-
-	gchar * p=(gchar*)buf;
-	char str[strlen(buf)+1];
-	sscanf(p," %s ",str);
-	sscanf(p," %ld ",&size);
-	p=strstr(p,"%");
-	p+=1;
-//	printf("%s %ld %s\n",name,size,p);
-	int y,m,d,h,mn;
-//	sscanf(p," %d-%d-%d ",&d,&m,&y);
-	sscanf(p," %d-%d-%d %d:%d",&d,&m,&y,&h,&mn);
-
-	ltm.tm_year=y;
-	if(ltm.tm_year<50) ltm.tm_year+=100;
-	ltm.tm_mon=m-1;
-	ltm.tm_mday=d;
-	ltm.tm_hour=h;
-	ltm.tm_min=mn;
-	ltm.tm_sec=0;
-
-//	printf("'%s' %ld %d-%d-%d %d:%d\n",name,size,ltm.tm_year,ltm.tm_mon,ltm.tm_mday,h,mn);
-
-	gchar * fullname=g_build_filename(DestDir,name,NULL);
-
-	time_t ut=mktime(&ltm);
-	struct utimbuf times;
-	times.actime = ut;
-        times.modtime = ut;
-
-	if(!size) 
-	{
-		CreateDirInDir(fullname);
-	} else
-	{
-		mkfile(fullname,size);
-	        utime(fullname, &times );
-	}
-
-	return 0;
-} 
-
-//------------------------------------------------------------------------------
-
 void UtilsCreateLink1(const char * source, const char * dest_dir)
 {
 	ClassString link_name = g_path_get_basename(source);
@@ -530,5 +454,94 @@ void LoadSearch(const char * mask,const char * text,const char * dest_dir, const
 	close(progress);
 	printf("End search - %d\n",count);
 }
+
+//------------------------------------------------------------------------------
+
+int PrintRar(const char * buf)
+{
+//406  1999-10-12 01:27   rxLib567/RX/RxNews.txt
+//  0  2005-04-27 12:07   rxLib567/RX/Units/
+	static gchar * last;
+	if(CountReadStrings==0)
+	{
+		if(buf[0]=='-')
+		{
+			last=0;
+			CountReadStrings=3;
+		}
+		return 0;
+	}
+
+	CountReadStrings++;
+
+	if(buf[0]=='-') return 1;
+
+	if((CountReadStrings&3)==0)
+	{
+		if(last) g_free(last);
+		last=g_strdup(buf);
+//printf("0:%s\n",buf);
+		return 0;
+	} else 
+        if((CountReadStrings&3)==1)
+	{
+	}
+	else
+	{
+		CountReadStrings++;
+		return 0;
+	}
+
+	long int size;
+	gchar * right;
+	gchar * name=last;
+	while(*name==0x20) name++; 
+        struct tm ltm;
+
+	gchar * p=(gchar*)buf;
+	char str[strlen(buf)+1];
+	sscanf(p," %s ",str);
+	sscanf(p," %ld ",&size);
+	p=strstr(p,"%");
+	p+=1;
+//	printf("%s %ld %s\n",name,size,p);
+	int y,m,d,h,mn;
+//	sscanf(p," %d-%d-%d ",&d,&m,&y);
+	sscanf(p," %d-%d-%d %d:%d",&d,&m,&y,&h,&mn);
+
+	ltm.tm_year=y;
+	if(ltm.tm_year<50) ltm.tm_year+=100;
+	ltm.tm_mon=m-1;
+	ltm.tm_mday=d;
+	ltm.tm_hour=h;
+	ltm.tm_min=mn;
+	ltm.tm_sec=0;
+
+//	printf("'%s' %ld %d-%d-%d %d:%d\n",name,size,ltm.tm_year,ltm.tm_mon,ltm.tm_mday,h,mn);
+	if(name[0]=='*')
+	{
+		RarPassword=1;
+	}	
+
+	gchar * fullname;
+	if( (RarPassword==1) && (name[0]!='*') )    fullname=g_strdup_printf("%s/*%s/",DestDir,name);
+	else fullname=g_build_filename(DestDir,name,NULL);
+
+	time_t ut=mktime(&ltm);
+	struct utimbuf times;
+	times.actime = ut;
+        times.modtime = ut;
+
+	if(!size) 
+	{
+		CreateDirInDir(fullname);
+	} else
+	{
+		mkfile(fullname,size);
+	        utime(fullname, &times );
+	}
+
+	return 0;
+} 
 
 //------------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <utime.h>
+#include <sys/vfs.h>
 
 using namespace std;
 
@@ -168,39 +169,6 @@ void UtilsMoveFiles(GList * l, const char * dest_dir)
 	fo.func=TASK_MOVE;
 
 	FileOperation1(l,dest_dir,&fo);
-}
-
-//-----------------------------------------------------------------------------
-
-void UtilsClearTrash(void)
-{
-	ClassString source; 	
-	InfoDisk * _info;
-	GList* list=g_list_first (List_disk);
-
-	StartFileOperation(); 
-	InfoOperation fo;
-	fo.func=TASK_CLEAR_DIR;
-
-	while (list!= NULL)
-	{
-		_info=(InfoDisk *)list->data;
-		source=g_strdup_printf("%s/info",_info->path_trash);
-
-   if(g_file_test(source.s,(GFileTest)(G_FILE_TEST_IS_DIR | G_FILE_TEST_EXISTS)))
-	{	
-		ParserDir(source.s,"/dev/null",&fo,0);
-	}	
-
-	source=g_strdup_printf("%s/files",_info->path_trash);
-
-   if(g_file_test(source.s,(GFileTest)(G_FILE_TEST_IS_DIR | G_FILE_TEST_EXISTS)))
-	{	
-		ParserDir(source.s,"/dev/null",&fo,0);
-	}	
-
-    list = (GList*)g_slist_next(list);
-   }
 }
 
 //-----------------------------------------------------------------------------
@@ -875,15 +843,20 @@ gchar * InfoDir(GList * l)
 
 //-----------------------------------------------------------------------------
 
-void ProcessCopyFiles(const char * dest_dir, InfoOperation * fo)
+long int GetFreeSpace2(const char * _name)
 {
-	if(fo->Lstat_dest(dest_dir, "Не открывается каталог получатель")) return;
-	GList * l=PanelGetSelected();
-    InfoDir(l);
-	fo->all_size=all_size;
-	fo->progress = open(PATH_INFO_PROGRESS,O_WRONLY);
-	FileOperation1(l,dest_dir,fo);
-	if(fo->progress>0) close(fo->progress);
+	ClassString name=g_strdup(_name);
+	struct statfs fs;
+	while(1)
+	{	
+		if(!statfs(name.s,&fs))
+		{	
+			long int free_size=fs.f_bavail*fs.f_bsize;
+			printf("free_size = %ld\n",free_size);
+			return free_size;
+		}
+		name=g_path_get_dirname(name.s);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -899,6 +872,14 @@ int LowFileCopy(const char * source, const char * dest, long int size, InfoOpera
 	FILE *  fd=0;
 	long int i=0;
 	int n;
+
+	long int free_size=GetFreeSpace2(dest);
+	if(free_size<size)
+	{
+		ClassString mes = g_strdup_printf("Нет места для копирования\n %s\n в %s",source,dest);
+		ShowWarning(mes.s);
+		return 1;
+	}
 	
 	fs=fopen(source,"r");
 	if(!fs)
@@ -971,6 +952,52 @@ error:
 	if(fs) fclose(fs);
 	return 1;
 #undef READ_BUFFER
+}
+
+//-----------------------------------------------------------------------------
+
+void UtilsClearTrash(void)
+{
+	ClassString source; 	
+	InfoDisk * info;
+	GList* list=g_list_first (List_disk);
+
+	StartFileOperation(); 
+	InfoOperation fo;
+	fo.func=TASK_CLEAR_DIR;
+
+	while (list!= NULL)
+	{
+		info=(InfoDisk *)list->data;
+		if(info && info->path_trash)
+		{	
+			source=g_strdup_printf("%s/info",info->path_trash);
+			if(g_file_test(source.s,(GFileTest)(G_FILE_TEST_IS_DIR | G_FILE_TEST_EXISTS)))
+			{	
+				ParserDir(source.s,"/dev/null",&fo,0);
+			}	
+
+			source=g_strdup_printf("%s/files",info->path_trash);
+			if(g_file_test(source.s,(GFileTest)(G_FILE_TEST_IS_DIR | G_FILE_TEST_EXISTS)))
+			{	
+				ParserDir(source.s,"/dev/null",&fo,0);
+			}	
+		}
+	    list = (GList*)g_slist_next(list);
+   }
+}
+
+//-----------------------------------------------------------------------------
+
+void ProcessCopyFiles(const char * dest_dir, InfoOperation * fo)
+{
+	if(fo->Lstat_dest(dest_dir, "Не открывается каталог получатель")) return;
+	GList * l=PanelGetSelected();
+    InfoDir(l);
+	fo->all_size=all_size;
+	fo->progress = open(PATH_INFO_PROGRESS,O_WRONLY);
+	FileOperation1(l,dest_dir,fo);
+	if(fo->progress>0) close(fo->progress);
 }
 
 //-----------------------------------------------------------------------------
