@@ -397,7 +397,7 @@ void OnButtonEdit( GtkButton * b, int flags )
 }
 
 //-----------------------------------------------------------------------------
-int flag_password;
+/*int flag_password;
 
 static int EchoRar(const char * buf)
 {
@@ -409,7 +409,7 @@ static int EchoRar(const char * buf)
 		return 1;
 	}   
 	return 0;
-}
+}*/
 
 gchar * Untar(const char * name,const char * destdir)
 {

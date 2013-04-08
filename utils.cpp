@@ -318,7 +318,7 @@ void OperationFile(const char * source,  const char * dest1, InfoOperation * fo)
 		if(!CheckWriteFile(source, &new_dest,fo)) return;
 		if(new_dest!=dest1)
 		{
-			printf("Rename file %s to %s\n",source,new_dest);
+//			printf("Rename file %s to %s\n",source,new_dest);
 			dest=g_strdup(new_dest);
 			g_free(new_dest);
 		}
@@ -360,7 +360,7 @@ int FileMoveFunc(const char * source, const char * dest, InfoOperation * fo)
 		                              source,dest,strerror( errno ) );
 		ShowCancel(mes.s);
 	}
-	printf("Rename file %s to %s \n",source,dest);
+//	printf("Rename file %s to %s \n",source,dest);
 	return res;
 }
 
@@ -852,7 +852,7 @@ long int GetFreeSpace2(const char * _name)
 		if(!statfs(name.s,&fs))
 		{	
 			long int free_size=fs.f_bavail*fs.f_bsize;
-			printf("free_size = %ld\n",free_size);
+//			printf("free_size = %ld\n",free_size);
 			return free_size;
 		}
 		name=g_path_get_dirname(name.s);
@@ -945,7 +945,7 @@ int LowFileCopy(const char * source, const char * dest, long int size, InfoOpera
 	fclose(fd);
 	fclose(fs);
     CopyProperty(source,dest);
-	printf("Copy file %s to %s ( %ld )\n",source,dest,size);
+//	printf("Copy file %s to %s ( %ld )\n",source,dest,size);
 	return 0;
 error:
 	if(fd) fclose(fd);
