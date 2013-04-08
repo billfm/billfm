@@ -245,28 +245,6 @@ void ClassTreePanel::UnSelectAll(void)
 
 //-----------------------------------------------------------------------------
 
-void ClassTreePanel::SelectPattern(const char * pattern)
-{
-	GPatternSpec *	pspec = g_pattern_spec_new (pattern);  
-    GtkTreeIter iter;
-	GtkTreeModel * model = GetModel();	
-
-	GtkTreeSelection * tree_sel = gtk_tree_view_get_selection( treeview );
-	gboolean valid = gtk_tree_model_get_iter_first(model,&iter);
-	while(valid)
-	{
-		GtkTreePath* path =gtk_tree_model_get_path(model,&iter);
-		gchar * name;
-		gtk_tree_model_get(model, &iter, MODEL_TEXT_FULL_NAME, &name, -1);
-		if (g_pattern_match_string (pspec, name)) 	gtk_tree_selection_select_path ( tree_sel, path );
-		g_free(name);
-		valid=gtk_tree_model_iter_next(model,&iter);		
-	}
-	InfoSelectedInStatusBar();
-}
-
-//-----------------------------------------------------------------------------
-
 static gint SortFuncName(GtkTreeModel *model, GtkTreeIter  *a,GtkTreeIter  *b, gpointer TypeSort);
 static gint SortFuncSize(GtkTreeModel *model, GtkTreeIter  *a,GtkTreeIter  *b, gpointer user_data);
 static gint SortFuncExt(GtkTreeModel *model, GtkTreeIter  *a,GtkTreeIter  *b, gpointer user_data);
@@ -726,6 +704,28 @@ void view_popup_menu(ClassTreePanel * panel, GdkEventButton *event)
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
                    (event != NULL) ? event->button : 0,
                    gdk_event_get_time((GdkEvent*)event));
+}
+
+//-----------------------------------------------------------------------------
+
+void ClassTreePanel::SelectPattern(const char * pattern)
+{
+	GPatternSpec *	pspec = g_pattern_spec_new (pattern);  
+    GtkTreeIter iter;
+	GtkTreeModel * model = GetModel();	
+
+	GtkTreeSelection * tree_sel = gtk_tree_view_get_selection( treeview );
+	gboolean valid = gtk_tree_model_get_iter_first(model,&iter);
+	while(valid)
+	{
+		GtkTreePath* path =gtk_tree_model_get_path(model,&iter);
+		gchar * name;
+		gtk_tree_model_get(model, &iter, MODEL_TEXT_FULL_NAME, &name, -1);
+		if (g_pattern_match_string (pspec, name)) 	gtk_tree_selection_select_path ( tree_sel, path );
+		g_free(name);
+		valid=gtk_tree_model_iter_next(model,&iter);		
+	}
+	InfoSelectedInStatusBar();
 }
 
 //-----------------------------------------------------------------------------

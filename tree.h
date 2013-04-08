@@ -8,6 +8,7 @@
 
 using namespace std;
 
+#define		MASK_MIME					0xFF
 #define		ICON_GNOME_TEXT				0
 #define		ICON_GNOME_FS_FOLDER		1
 #define		ICON_GNOME_X_APP			2
@@ -149,10 +150,10 @@ class ClassPanel
 	int IsBlackFile(const char * name,const char * ext);
 	void DeleteItem(const char * name);
 	gboolean FindIter(const char * tagname,GtkTreeIter * iter,int col);
-
 	void InfoSelectedInStatusBar(void);
 	void InfoSingleInStatusBar(void);
 	void InfoMultiInStatusBar(void);		
+	void SelectBreakLink(void);		
 } ;
 
 //-----------------------------------------------------------------------------

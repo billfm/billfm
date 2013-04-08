@@ -397,19 +397,6 @@ void OnButtonEdit( GtkButton * b, int flags )
 }
 
 //-----------------------------------------------------------------------------
-/*int flag_password;
-
-static int EchoRar(const char * buf)
-{
-	char key[]="Encrypted file:  CRC failed in";
-//	printf(">%s<\n",buf);
-    if(!strstr(buf,key))
-    {
-		flag_password=1;
-		return 1;
-	}   
-	return 0;
-}*/
 
 gchar * Untar(const char * name,const char * destdir)
 {

@@ -14,13 +14,15 @@
 #include "fsmonitor.h"
 
 static void MountShared(int ReadOnly);
+int  SetApplication(const char * app, const char * filename);
 
 void CreateLink(const char * source,const char * dest_dir, int show_query,int type_link);
 void miCreateBookmark(GtkButton* button, int index_operation);
 void miCreateSymlink(GtkButton* button, int index_operation);
 void miCreateHardlink(GtkButton* button, int index_operation);
-int SetApplication(const char * app, const char * filename);
 void OnMenuFarCopy(GtkObject *object, gpointer user_data);
+void miBreakLink(GtkButton* button, int index_operation);
+
 //-----------------------------------------------------------------------------
 
 void ChangeLowerUpper(int mode)
@@ -276,6 +278,7 @@ void ConnectMemuSignal()
 		"miToUpper",
 		"miHardlink",
 		"miDeletelinkAndFile",
+		"miSelectBreakLink",
 		0
 	};
 
@@ -313,6 +316,7 @@ void ConnectMemuSignal()
 		(GCallback) miToUpper,
 		(GCallback) miCreateHardlink,
 		(GCallback) miDeletelinkAndFile,
+		(GCallback) miBreakLink,		
 		0
 	}; 
 
@@ -485,5 +489,11 @@ void OnMenuFarCopy(GtkObject *object, gpointer user_data)
 	ExternalFileCopy(getuid(),TASK_COPY);
 }
 
+//-----------------------------------------------------------------------------
+
+void  miBreakLink(GtkButton* button, int index_operation)
+{
+	Panels[ActivePanel]->SelectBreakLink();
+}
 //-----------------------------------------------------------------------------
 

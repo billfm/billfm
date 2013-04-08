@@ -821,3 +821,25 @@ void ClassPanel::InfoSingleInStatusBar(void)
 }
 
 //-----------------------------------------------------------------------------
+
+void ClassPanel::SelectBreakLink(void)
+{
+
+	GtkTreeIter iter;
+	GtkTreeModel * model = GetModel();	
+
+	GtkTreeSelection * tree_sel = gtk_tree_view_get_selection( treeview );
+	gboolean valid = gtk_tree_model_get_iter_first(model,&iter);
+	while(valid)
+	{
+		GtkTreePath* path =gtk_tree_model_get_path(model,&iter);
+		int mime;
+		gtk_tree_model_get(model, &iter, MODEL_INT_COL_MIME, &mime, -1);
+		if((mime&MASK_MIME)==ICON_GNOME_BREAK_LINK) 
+			gtk_tree_selection_select_path ( tree_sel, path );
+		valid=gtk_tree_model_iter_next(model,&iter);		
+	}
+	InfoSelectedInStatusBar();
+}
+
+//-----------------------------------------------------------------------------

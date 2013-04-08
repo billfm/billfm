@@ -1,13 +1,13 @@
 
 [Anjuta]
 Maximized=1
-Geometry=1280x972+0+0
+Geometry=1280x968+0+0
 
 [Project Manager]
 Shortcut=C file:///home/vik/billfm/billfm.o billfm.o %%%C file:///home/vik/billfm/mime.o mime.o %%%C file:///home/vik/billfm/disks.o disks.o %%%C file:///home/vik/billfm/ptk-clipboard.o ptk-clipboard.o %%%C file:///home/vik/billfm/setting.o setting.o %%%C file:///home/vik/billfm/icon-cell-renderer.o icon-cell-renderer.o %%%C file:///home/vik/billfm/mainmenu.o mainmenu.o %%%C file:///home/vik/billfm/input-dialog.o input-dialog.o %%%C file:///home/vik/billfm/treepanel.o treepanel.o %%%C file:///home/vik/billfm/exopanel.o exopanel.o %%%C file:///home/vik/billfm/dropbox.o dropbox.o %%%C file:///home/vik/billfm/on_button.o on_button.o %%%C file:///home/vik/billfm/fsmonitor.o fsmonitor.o %%%C file:///home/vik/billfm/fileprop.o fileprop.o %%%C file:///home/vik/billfm/panels.o panels.o %%%C file:///home/vik/billfm/utils.o utils.o %%%C file:///home/vik/billfm/sidepanel.o sidepanel.o %%%C file:///home/vik/billfm/override.o override.o %%%C file:///home/vik/billfm/trash.o trash.o %%%C file:///home/vik/billfm/bufgets.o bufgets.o %%%C file:///home/vik/billfm/path-entry.o path-entry.o %%%C file:///home/vik/billfm/billfm billfm %%%C file:///home/vik/billfm/clean clean %%%C file:///home/vik/billfm/extutils.o extutils.o 
 
 [File Loader]
-Files=file:///home/vik/billfm/treepanel.cpp#47%%%file:///home/vik/billfm/override.cpp#434%%%file:///home/vik/billfm/utils.cpp#321%%%file:///home/vik/billfm/extutils.cpp#240%%%file:///home/vik/billfm/utils.h#184%%%file:///home/vik/billfm/ptk-clipboard.c#18%%%file:///home/vik/billfm/on_button.cpp#412
+Files=file:///home/vik/billfm/treepanel.cpp#731%%%file:///home/vik/billfm/mime.cpp#339%%%file:///home/vik/billfm/tree.h#11%%%file:///home/vik/billfm/mainmenu.cpp#496%%%file:///home/vik/billfm/panels.cpp#839
 
 [Document Manager]
 bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
