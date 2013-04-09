@@ -751,13 +751,16 @@ void MountGvfsArchive(void)
 }
 
 //-----------------------------------------------------------------------------
-long int GetFreeSpace2(const char * _name);
+
 
 void	OnButtonTest( GtkButton* button, int index_operation )
 {
-	GetFreeSpace2("/media/win_d/JAGER.ZIP");
 //	gtk_widget_hide((GtkWidget*)ProgressBar);
 //	gtk_widget_hide((GtkWidget*)PulseBar);	
+	GtkWidget *window;
+	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_widget_show_all (window);
+
 }
 
 //-----------------------------------------------------------------------------

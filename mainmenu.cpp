@@ -63,6 +63,13 @@ void miDeletelinkAndFile(GtkObject *object, gpointer user_data)
 
 //-----------------------------------------------------------------------------
 
+void miLastOperation(GtkObject *object, gpointer user_data)
+{
+	system("leafpad /tmp/billfm.txt");
+}
+
+//-----------------------------------------------------------------------------
+
 void miToLower(GtkObject *object, gpointer user_data)
 {
 	ChangeLowerUpper(0);
@@ -279,6 +286,7 @@ void ConnectMemuSignal()
 		"miHardlink",
 		"miDeletelinkAndFile",
 		"miSelectBreakLink",
+		"miLastOperation",
 		0
 	};
 
@@ -316,7 +324,8 @@ void ConnectMemuSignal()
 		(GCallback) miToUpper,
 		(GCallback) miCreateHardlink,
 		(GCallback) miDeletelinkAndFile,
-		(GCallback) miBreakLink,		
+		(GCallback) miBreakLink,
+		(GCallback) miLastOperation,
 		0
 	}; 
 

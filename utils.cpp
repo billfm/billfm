@@ -777,8 +777,11 @@ void FileCopyFunc(const char * source, const char * dest, InfoOperation * fo)
 	if(S_ISLNK(fo->source_mode) )
 	{
 		ClassString link;
-		LinkDialogCopy(fo,source,dest);
-//printf("%d\n",fo->mode_link);
+		if(!fo->all_link)
+		{	
+			if(LinkDialogCopy(fo,source,dest)==0) return;
+		}	
+
 		if(fo->mode_link==3)
 		{	
 			link=Link2File(source);

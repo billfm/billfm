@@ -13,6 +13,7 @@ static GtkEntry* EntryCommand;
 static gchar * new_filename;
 static GtkLabel * prompt;
 int result=-1;
+int ResultCopyLink=-1;
 
 //-----------------------------------------------------------------------------
 
@@ -89,6 +90,14 @@ int DialogYesNo(const char * mes)
 	int ret = gtk_dialog_run( GTK_DIALOG( dlg ) );
 	gtk_widget_destroy( dlg );
 	return  (ret==GTK_RESPONSE_YES);
+}
+
+//-----------------------------------------------------------------------------
+
+static void OnDialogDestroy( GtkButton* button, GtkWidget * dialog ) 
+{
+	gtk_widget_hide((GtkWidget*)dialog);	
+	gtk_widget_destroy((GtkWidget*)dialog);
 }
 
 //-----------------------------------------------------------------------------
@@ -267,6 +276,7 @@ int DialogOverride( gchar * source, const char ** newdest )
 
 	gtk_window_set_keep_above((GtkWindow*) dialog, 1);
 	gtk_dialog_run (dialog);
+	while (gtk_events_pending ())          gtk_main_iteration ();	
     if(dialog)	gtk_widget_destroy( (GtkWidget*) dialog );
 
 	if(result==RESPONSE_RENAME) *newdest=new_filename;
@@ -283,88 +293,6 @@ static void OnCheckedClick( GtkButton* button, int res )
 	ModeCopyLink=res;
 }
 
-//-----------------------------------------------------------------------------
-
-int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest)
-{
-    ModeCopyLink=1;
-	GtkBuilder* builder=CreateForm("copy.glade");
-	if(!builder) return -1;
-
-	ClassString prompt;
-	if(fo->func==TASK_COPY) prompt=g_strdup("Копировать:"); else prompt=g_strdup("Переместить:");
-    prompt=g_strdup_printf("%s\n %s\nв %s",prompt.s, source,dest);
-
-	GtkLabel * label = (GtkLabel*) gtk_builder_get_object( builder, "label1");
-	gtk_label_set_text ((GtkLabel *) label, prompt.s);
-	
-	GtkButton* button;
-
-	const char* items[] =
-    {
-		"Выполнить",
-		"Отменить",
-		0
-	};
-
-	const char *names[] =
-    {
-		"bOk",
-		"bCancel",		
-		0
-	};
-
-	for(int i=0; items[i]; i++)
-	{
-		button = (GtkButton*) gtk_builder_get_object( builder,names[i]);
-		gtk_button_set_label(button,items[i]);
-	}
-
-
-	dialog = (GtkDialog *) gtk_builder_get_object( builder, "dialog1");	
-	gtk_window_set_keep_above((GtkWindow*) dialog, 1);
-
-	if(fo->func==TASK_COPY) 
-    	gtk_window_set_title(GTK_WINDOW(dialog), "Копировать файлы");
-	else 
-    	gtk_window_set_title(GTK_WINDOW(dialog), "Перемещать файлы");
-
-	GtkWidget *radio1=0, *radio2=0, *radio3=0, *box=0;
-	box = (GtkWidget *)gtk_builder_get_object( builder, "vbox2");
-	if(box)
-	{	
-		radio1 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
-							"Создать на старый источник (-l) (default)");
-		g_signal_connect(G_OBJECT(radio1),"clicked",G_CALLBACK(OnCheckedClick),(void*)1);
-   
-    	radio2 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
-                            "Сохранить как есть (-P)");
-   		g_signal_connect(G_OBJECT(radio2),"clicked",G_CALLBACK(OnCheckedClick),(void*)2);
-
-		if(fo->func==TASK_COPY) 
-		{	
-		   	radio3 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
-								"Копировать файл по ссылке ");
-			g_signal_connect(G_OBJECT(radio3),"clicked",G_CALLBACK(OnCheckedClick),(void*)3);
-		}	
-		
-		gtk_box_pack_start (GTK_BOX (box), radio1, TRUE, TRUE, 2);
-		gtk_box_pack_start (GTK_BOX (box), radio2, TRUE, TRUE, 2);
-		if(fo->func==TASK_COPY) 
-		{	
-			gtk_box_pack_start (GTK_BOX (box), radio3, TRUE, TRUE, 2);	
-		}
-		
-		gtk_widget_show_all ((GtkWidget*) dialog);
-	}
-   
-
-	gtk_dialog_run (dialog);
-    if(dialog)	gtk_widget_destroy( (GtkWidget*) dialog );
-	fo->mode_link=ModeCopyLink;
-	return 1;
-}	
-	
 //-----------------------------------------------------------------------------
 
 int DialogCopy(int task, const char * dest, GList * l)
@@ -401,17 +329,20 @@ int DialogCopy(int task, const char * dest, GList * l)
 		0
 	};
 
+	dialog = (GtkDialog *) gtk_builder_get_object( builder, "dialog1");	
+
 	for(int i=0; items[i]; i++)
 	{
 		button = (GtkButton*) gtk_builder_get_object( builder,names[i]);
 		gtk_button_set_label(button,items[i]);
+		g_signal_connect(G_OBJECT(button),"clicked",G_CALLBACK(OnDialogDestroy), dialog);
 	}
 
 	GtkLabel * label = (GtkLabel*) gtk_builder_get_object( builder, "label1");
 	ClassString mes=g_strdup_printf("%s\n\n В каталог :\n %s\n",source.s,dest);
 	gtk_label_set_text ((GtkLabel *) label, mes.s);
 
-	dialog = (GtkDialog *) gtk_builder_get_object( builder, "dialog1");	
+
 	gtk_window_set_keep_above((GtkWindow*) dialog, 1);
 
 	if(task==TASK_COPY) 
@@ -420,12 +351,7 @@ int DialogCopy(int task, const char * dest, GList * l)
     	gtk_window_set_title(GTK_WINDOW(dialog), "Перемещать файлы");
 
 	int res=gtk_dialog_run (dialog);
-    if(dialog)
-	{	
-		gtk_widget_hide((GtkWidget*)dialog);	
-		gtk_widget_destroy((GtkWidget*)dialog);
-	}	
-
+	while (gtk_events_pending ())          gtk_main_iteration ();
 	if(res==1)
 	{	
 		InfoOperation fo;
@@ -434,6 +360,121 @@ int DialogCopy(int task, const char * dest, GList * l)
 		ProcessCopyFiles(dest,&fo);
 	}	
 	return res;
+}	
+	
+//-----------------------------------------------------------------------------
+
+static GtkDialog * dialog_link_copy;
+
+static void OnDialogCopyLinkClick( GtkButton* button, int res ) 
+{
+	ResultCopyLink=res;
+    if(dialog_link_copy)
+	{	
+		gtk_widget_hide((GtkWidget*)dialog_link_copy);	
+		gtk_widget_destroy((GtkWidget*)dialog_link_copy);
+		dialog_link_copy=NULL;
+	}	
+}	
+
+//-----------------------------------------------------------------------------
+
+int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest)
+{
+    ModeCopyLink=1;
+	GtkBuilder* builder=CreateForm("link-copy.glade");
+	if(!builder) return -1;
+	dialog_link_copy = (GtkDialog *) gtk_builder_get_object( builder, "dialog1");	
+	gtk_window_set_keep_above((GtkWindow*) dialog_link_copy, 1);
+
+	ClassString prompt;
+	if(fo->func==TASK_COPY) prompt=g_strdup("Копировать:"); else prompt=g_strdup("Переместить:");
+    prompt=g_strdup_printf("%s\n %s\nв %s",prompt.s, source,dest);
+
+	GtkLabel * label = (GtkLabel*) gtk_builder_get_object( builder, "label1");
+	gtk_label_set_text ((GtkLabel *) label, prompt.s);
+	
+	GtkButton* button;
+
+	const char* items[] =
+    {
+		"Для всех",
+		"Выполнить",
+		"Отменить",
+		0
+	};
+
+	const char *names[] =
+    {
+		"bOkAll",
+		"bOk",
+		"bCancel",		
+		0
+	};
+
+#define RESPONSE_FOR_ALL_LINK 2
+#define RESPONSE_OK 1
+
+	int results[]=
+	{
+		RESPONSE_FOR_ALL_LINK,
+		RESPONSE_OK,
+		RESPONSE_CANCEL,
+		-1,
+		0
+	};
+	for(int i=0; items[i]; i++)
+	{
+		button = (GtkButton*) gtk_builder_get_object( builder,names[i]);
+		gtk_button_set_label(button,items[i]);
+		g_signal_connect(G_OBJECT(button),"clicked",G_CALLBACK(OnDialogCopyLinkClick), (void*)results[i]);
+	}
+
+
+	if(fo->func==TASK_COPY) 
+    	gtk_window_set_title(GTK_WINDOW(dialog_link_copy), "Копировать файлы");
+	else 
+    	gtk_window_set_title(GTK_WINDOW(dialog_link_copy), "Перемещать файлы");
+
+	GtkWidget *radio1=0, *radio2=0, *radio3=0, *box=0;
+	box = (GtkWidget *)gtk_builder_get_object( builder, "vbox2");
+	if(box)
+	{	
+		radio1 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
+							"Создать на старый источник (-l) (default)");
+		g_signal_connect(G_OBJECT(radio1),"clicked",G_CALLBACK(OnCheckedClick),(void*)1);
+   
+    	radio2 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
+                            "Сохранить как есть (-P)");
+   		g_signal_connect(G_OBJECT(radio2),"clicked",G_CALLBACK(OnCheckedClick),(void*)2);
+
+		if(fo->func==TASK_COPY) 
+		{	
+		   	radio3 = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio1),
+								"Копировать файл по ссылке ");
+			g_signal_connect(G_OBJECT(radio3),"clicked",G_CALLBACK(OnCheckedClick),(void*)3);
+		}	
+		
+		gtk_box_pack_start (GTK_BOX (box), radio1, TRUE, TRUE, 2);
+		gtk_box_pack_start (GTK_BOX (box), radio2, TRUE, TRUE, 2);
+		if(fo->func==TASK_COPY) 
+		{	
+			gtk_box_pack_start (GTK_BOX (box), radio3, TRUE, TRUE, 2);	
+		}
+		
+		gtk_widget_show_all ((GtkWidget*) dialog_link_copy);
+	}
+
+	gtk_dialog_run(dialog_link_copy);
+
+	while (gtk_events_pending ())          gtk_main_iteration ();
+
+	if(ResultCopyLink>0)
+	{	
+		fo->mode_link=ModeCopyLink;
+		fo->all_link=ResultCopyLink==2;
+	}	
+	return ResultCopyLink;
 }	
 	
 //-----------------------------------------------------------------------------
