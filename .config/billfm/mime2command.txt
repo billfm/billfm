@@ -19,7 +19,6 @@ mpg	smplayer
 wmv	smplayer
 ogv	smplayer
 mov	smplayer
-deb	gdebi-gtk
 zip	file-roller
 tgz	file-roller
 bz2	file-roller
@@ -38,7 +37,6 @@ zip	xarchiver
 tgz	xarchiver
 bz2	xarchiver
 rar	xarchiver
-deb	xarchiver
 tar	xarchiver
 c	leafpad
 cpp	leafpad
@@ -58,5 +56,6 @@ sh	lxterminal -e
 hex	ghex
 anjuta  anjuta
 xz /usr/share/applications/file-roller.desktop
-deb ~/menu/Администрирование/gdebi.desktop
+deb	gdebi-gtk
+deb	xarchiver
 htm ~/menu/Связь/firefox.desktop

@@ -36,6 +36,8 @@ int chod_mask[]=
 	S_ISUID//	0004000	бит setuid			
 };
 
+//-----------------------------------------------------------------------------
+
 void DialogFileProperty(const char * fullname)
 {
 	ClassString str;
@@ -49,7 +51,28 @@ void DialogFileProperty(const char * fullname)
     gtk_entry_set_text(entry,shortname.s);
 
 	entry = (GtkEntry*) gtk_builder_get_object( builder, "fullpath");
-    gtk_entry_set_text(entry,fullname);
+
+	const char * trash_name=IsAlreadyTrashed(fullname);
+    if(trash_name)
+	{
+		ClassString str=PrepareRestore(fullname);
+		if(str.s)
+		{	
+			gtk_entry_set_text(entry,str.s);
+			str=GetDeletedTime(fullname);
+			GtkEntry * entry = (GtkEntry*) gtk_builder_get_object( builder, "deleted_entry");
+		    gtk_entry_set_text(entry,str.s);
+		}	
+	} else
+	{	
+		gtk_entry_set_text(entry,fullname);
+		GtkWidget * widget = (GtkWidget*) gtk_builder_get_object( builder, "deleted_entry");
+		gtk_widget_destroy(widget);
+//		gtk_widget_hide(widget);
+		widget = (GtkWidget*) gtk_builder_get_object( builder, "deleted_label");
+	    gtk_widget_hide(widget);
+		gtk_widget_destroy(widget);		
+	}	
 
 	entry = (GtkEntry*) gtk_builder_get_object( builder, "mime_type");
 
@@ -80,6 +103,11 @@ void DialogFileProperty(const char * fullname)
 		str=showfilesize(filestat.st_size);
 		str=g_strdup_printf("%d %s",(int)filestat.st_size,str.s);
 		entry = (GtkEntry*) gtk_builder_get_object( builder, "size");
+	    gtk_entry_set_text(entry,str.s);
+
+		str=showfilesize(filestat.st_blocks*filestat.st_blksize);
+		str=g_strdup_printf("%ld %s",filestat.st_blocks*filestat.st_blksize,str.s);
+		entry = (GtkEntry*) gtk_builder_get_object( builder, "size_on_disk");
 	    gtk_entry_set_text(entry,str.s);
 
 		struct passwd * puser;
@@ -116,12 +144,13 @@ void DialogFileProperty(const char * fullname)
 				mask|=chod_mask[i];
 			}  
 		}
-			int res=chmod(fullname,mask);
-			if(res)
-			{
-				ClassString mes = g_strdup_printf("Error set right.\n%s",strerror( errno ) );
-         		ShowFileOperation(mes.s);
-			}
+		int res=chmod(fullname,mask);
+		if(res)
+		{
+			ClassString mes = g_strdup_printf("Error set right.\n%s",strerror( errno ) );
+       		ShowFileOperation(mes.s);
+		}
+
 		gtk_widget_destroy(GTK_WIDGET(dlg));
 		return;
     }//while
@@ -165,4 +194,5 @@ gchar * get_file_rigth_string( mode_t mode )
 }
 
 //-----------------------------------------------------------------------------
-
+//find /home/test -type f -exec chmod 644 {} \;
+//find /home/test -type d -exec chmod 755 {} \;

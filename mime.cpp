@@ -623,7 +623,8 @@ int IsArchve(const char * fullname)
 {
 	if(IsTar(fullname)) return 1;
 	if(IsZip(fullname)) return 1;
-	if(IsRar(fullname)) return 1;	
+	if(IsRar(fullname)) return 1;
+	if(IsDeb(fullname)) return 1;	
 	return 0;
 }
 

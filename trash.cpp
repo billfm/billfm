@@ -119,12 +119,35 @@ gchar * get_full_restore_name( const char * source, const char * trash_name, con
 
 //-----------------------------------------------------------------------------
 
+gchar * GetDeletedTime(const char * source)
+{
+	gchar * trashinfo_val=NULL;
+
+    const char * trash_name=IsAlreadyTrashed(source);
+    if(!trash_name)		return NULL;
+
+	gchar * trashinfo = get_trashinfo( (gchar*)source, (gchar*)trash_name );
+	if(!trashinfo)		return NULL;
+
+	GKeyFile*     kf = g_key_file_new();
+	if(g_key_file_load_from_file( kf, trashinfo, G_KEY_FILE_NONE, NULL ))
+	{
+		trashinfo_val = g_key_file_get_string( kf, "Trash Info", "DeletionDate", NULL );
+	} 
+	g_key_file_free( kf );
+	g_free(trashinfo);
+
+	return trashinfo_val;
+}
+
+//-----------------------------------------------------------------------------
+
 gchar * PrepareRestore(const char * source)
 {
 	gchar * dest_name=NULL;
 	gchar * dirname;
 
-    const char * trash_name=IsAlreadyTrashed( source );
+    const char * trash_name=IsAlreadyTrashed(source);
     if(!trash_name)
 	{
 		ClassString mes = g_strdup_printf("Cannot find(?!) trash for `%s`.", source );

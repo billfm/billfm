@@ -296,6 +296,13 @@ static void FileOperation1(GList * l, const char * dest_dir, InfoOperation * fo)
 void OperationFile(const char * source,  const char * dest1, InfoOperation * fo)
 {
 	all_files++;
+
+	if(fo->func==TASK_FILE_RIGHT)
+	{	
+        chmod(source,fo->st_mode);			
+		return;
+	}	
+		
 	if(fo->func==TASK_INFO)
 	{	
 		ClassString str=g_strdup_printf("%s\n",source);
@@ -532,98 +539,6 @@ void RestoreSelectedFiles()
 
 //-----------------------------------------------------------------------------
 
-static void ParserDir(const char * source,  const char * dest, InfoOperation * fo, int level)
-{
-	if(fo->Lstat_source(source, "ParserDir - Не открывается источник"))
-	{	
-		printf("ERROR: %s\n",source);
-		return;
-	}	
-
-	if( S_ISDIR(fo->source_mode))
-    {
-		if(strstr(dest,source))
-		{
-			ClassString mes = g_strdup_printf("Копирование в себя\nИсточник: '%s'\nПолучатель: %s",source,dest);
-            ShowMessage3(0,"Операция отменена",mes.s);
-			return;
-		}	
-
-		if(fo->func==TASK_COPY || fo->func==TASK_MOVE)
-		{	
-			if(!CreateWriteDir(source,(gchar**)&dest)) return;
-		}	
-		
-		DIR * d;     
-		struct dirent * entry;
-		d = opendir(source);
-		if(d == NULL) 
-		{
-			if(!SizeDirShow)
-			{
-				ClassString mes = g_strdup_printf("Error open source dir !\n Source file '%s'\n Error (%d) '%s'",
-    	           source,errno,strerror(errno));
-
-				ShowCancel(mes.s);
-			}	
-			return;
-	     }
-
-		while ( (entry = readdir(d))>0)
-	    {
-			if(cancel_all) return;
-			if(!strcmp(entry->d_name,".")) continue;
-			if(!strcmp(entry->d_name,"..")) continue;
-			if(!strncmp(entry->d_name,".",1)) all_hidden++;
-			
-			ClassString src_new = g_build_filename(source,entry->d_name, NULL );
-			ClassString dest_new = g_build_filename(dest,entry->d_name, NULL );			
-
-//			InfoOperation fo_new;
-//			fo_new.func=fo->func;
-//			fo_new.mode_link=fo->mode_link;
-//			ParserDir((const char*)src_new.s,(const char*)dest_new.s,&fo_new,level+1);
-			ParserDir((const char*)src_new.s,(const char*)dest_new.s,fo,level+1);
-			if(cancel_all) return;			
-	     }  
-		closedir(d);
-		all_dirs++; 
- 		if( fo->func==TASK_DELETE || fo->func==TASK_MOVE || (fo->func==TASK_CLEAR_DIR && level))
-		{	
-			if(rmdir(source))
-			{
-//				if(errno==ENOTEMPTY)
-//				{
-//					BigRemdir(source);
-//					return;	
-//				}	
-				ClassString mes = g_strdup_printf("Error delete dir '%s'.\n%s",source,strerror(errno));
-				ShowCancel(mes.s);
-			}	
-		}	
-    } else
-	{
-		if( !S_ISREG(fo->source_mode) 
-		 && !S_ISLNK(fo->source_mode)
-		 && !S_ISFIFO(fo->source_mode)		   
-		 && !S_ISSOCK(fo->source_mode)		   
-		   )
-		{
-	 		if(fo->func!=TASK_INFO)
-			{	
-				gchar * mes = g_strdup_printf("Unknow file type\n '%s')", source);
-				ShowWarning(mes);
-			}	
-			return;
-		}
-		all_size+=fo->source_size;
-		OperationFile(source,dest,fo);
-	}
-
-}
-
-//-----------------------------------------------------------------------------
-
 long int GetSizeDir(const char * source)
 {
 	StartFileOperation();
@@ -751,6 +666,19 @@ int IsZip(const char * fullname)
 	size_t len=strlen(fullname);
 
 	const char key[]=".zip";
+	size_t lenkey=strlen(key);
+	if(len>lenkey && !strcmp(key,&fullname[len-lenkey])) return 1;
+	
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+
+int IsDeb(const char * fullname)
+{
+	size_t len=strlen(fullname);
+
+	const char key[]=".deb";
 	size_t lenkey=strlen(key);
 	if(len>lenkey && !strcmp(key,&fullname[len-lenkey])) return 1;
 	
@@ -1001,6 +929,110 @@ void ProcessCopyFiles(const char * dest_dir, InfoOperation * fo)
 	fo->progress = open(PATH_INFO_PROGRESS,O_WRONLY);
 	FileOperation1(l,dest_dir,fo);
 	if(fo->progress>0) close(fo->progress);
+}
+
+//-----------------------------------------------------------------------------
+
+void SetRightDir(const char * source,int mask)
+{
+	StartFileOperation();
+	InfoOperation fo;
+	fo.func=TASK_DIR_RIGHT;
+	fo.st_mode=mask;
+	ParserDir(source,"/dev/null",&fo,0);
+}
+
+//-----------------------------------------------------------------------------
+
+static void ParserDir(const char * source,  const char * dest, InfoOperation * fo, int level)
+{
+	if(fo->Lstat_source(source, "ParserDir - Не открывается источник"))
+	{	
+		printf("ERROR: %s\n",source);
+		return;
+	}	
+
+	if( S_ISDIR(fo->source_mode))
+    {
+ 		if(fo->func==TASK_FILE_RIGHT)
+		{	
+			int res=chmod(source,fo->st_mode);
+			if(res)
+			{
+				ClassString mes = g_strdup_printf("Error set right.\n%s",strerror( errno ) );
+         		ShowFileOperation(mes.s);
+			}
+		}	
+		
+		if(strstr(dest,source))
+		{
+			ClassString mes = g_strdup_printf("Копирование в себя\nИсточник: '%s'\nПолучатель: %s",source,dest);
+            ShowMessage3(0,"Операция отменена",mes.s);
+			return;
+		}	
+
+		if(fo->func==TASK_COPY || fo->func==TASK_MOVE)
+		{	
+			if(!CreateWriteDir(source,(gchar**)&dest)) return;
+		}	
+		
+		DIR * d;     
+		struct dirent * entry;
+		d = opendir(source);
+		if(d == NULL) 
+		{
+			if(!SizeDirShow)
+			{
+				ClassString mes = g_strdup_printf("Error open source dir !\n Source file '%s'\n Error (%d) '%s'",
+    	           source,errno,strerror(errno));
+
+				ShowCancel(mes.s);
+			}	
+			return;
+	     }
+
+		while ( (entry = readdir(d))>0)
+	    {
+			if(cancel_all) return;
+			if(!strcmp(entry->d_name,".")) continue;
+			if(!strcmp(entry->d_name,"..")) continue;
+			if(!strncmp(entry->d_name,".",1)) all_hidden++;
+			
+			ClassString src_new = g_build_filename(source,entry->d_name, NULL );
+			ClassString dest_new = g_build_filename(dest,entry->d_name, NULL );			
+
+			ParserDir((const char*)src_new.s,(const char*)dest_new.s,fo,level+1);
+			if(cancel_all) return;			
+	     }  
+		closedir(d);
+		all_dirs++; 
+ 		if( fo->func==TASK_DELETE || fo->func==TASK_MOVE || (fo->func==TASK_CLEAR_DIR && level))
+		{	
+			if(rmdir(source))
+			{
+				ClassString mes = g_strdup_printf("Error delete dir '%s'.\n%s",source,strerror(errno));
+				ShowCancel(mes.s);
+			}	
+		}	
+    } else
+	{//file operation
+		if( !S_ISREG(fo->source_mode) 
+		 && !S_ISLNK(fo->source_mode)
+		 && !S_ISFIFO(fo->source_mode)		   
+		 && !S_ISSOCK(fo->source_mode)		   
+		   )
+		{
+	 		if(fo->func!=TASK_INFO)
+			{	
+				gchar * mes = g_strdup_printf("Unknow file type\n '%s')", source);
+				ShowWarning(mes);
+			}	
+			return;
+		}
+		all_size+=fo->source_size;
+		OperationFile(source,dest,fo);
+	}
+
 }
 
 //-----------------------------------------------------------------------------

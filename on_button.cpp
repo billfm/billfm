@@ -377,6 +377,66 @@ void	OnButtonBookmark( GtkButton* button, int index_operation )
 
 //-----------------------------------------------------------------------------
 
+void OnButtonMove( GtkButton* button, int index_operation ) 
+{
+	ExternalFileCopy(getuid(),TASK_MOVE);
+}
+
+//-----------------------------------------------------------------------------
+
+void OnButtonCopy( GtkButton* button, int _index_operation ) 
+{
+	GList * l = PanelGetSelected();
+	gchar * mes=0;
+	for ( int i=0; l; l = l->next,i++ )
+	{
+		mes=Untar((const char*)l->data,Panels[1-ActivePanel]->MyPath);
+	}
+	if(!mes)
+	{	
+		ExternalFileCopy(getuid(),TASK_COPY);
+	}
+}
+
+//-----------------------------------------------------------------------------
+
+void OnButtonDelete( GtkButton* button, int on_dialog ) 
+{
+	int intrash;
+	ClassString mes;
+
+	if(IsAlreadyTrashed(Panels[ActivePanel]->MyPath))
+	{   
+		mes="Это файлы уже в корзине.\nУдалить безвозвратно?";
+		intrash=0;
+		on_dialog=1;
+	} else
+	{
+		const char * path_trash;
+		path_trash=Filename2TrashDir(Panels[ActivePanel]->MyPath);
+		if(!path_trash) 
+		{
+			mes="Корзина не найдена, удалить безвозвратно?";
+			intrash=0;
+			on_dialog=1;
+		} else
+		{
+			mes="Переместить в корзину?";
+			intrash=1;
+		}	
+	}
+
+	if(on_dialog)
+	{	
+		if(!DialogYesNo(mes.s)) return;
+	}	
+
+	GList * l = Panels[ActivePanel]->GetSelectedFiles();
+	if(intrash)	UtilsMoveInTrash(l); else UtilsUnlink(l);
+}
+
+//-----------------------------------------------------------------------------
+
 void OnButtonEdit( GtkButton * b, int flags ) 
 {
 	const char * edit=EditViewDefault[flags &3];
@@ -447,9 +507,22 @@ gchar * Untar(const char * name,const char * destdir)
 
 	if(IsTar(zip.s))
 	{	
-		com=g_strdup_printf("cd '%s'; tar -x --file='%s' '%s'", unpack_dir,zip.s,inzip.s);
+        ClassString base=g_path_get_dirname(inzip.s);
+		if(!strcmp(base.s,"."))
+		{
+			com=g_strdup_printf("cd '%s'; tar -x --file='%s' './%s'", unpack_dir,zip.s,inzip.s);
+		}	else com=g_strdup_printf("cd '%s'; tar -x --file='%s' '%s'", unpack_dir,zip.s,inzip.s);
+		printf("Start unpack:%s \n",com.s);
+		system(com.s);
+		printf("Unpack end \n");	
+	}	else
+
+	if(IsDeb(zip.s))
+	{	
+		com=g_strdup_printf("cd '%s'; ar x '%s' '%s'", unpack_dir,zip.s,inzip.s);
 		system(com.s);
 	}	else
+		
 	if(IsZip(zip.s))
 	{	
 		
@@ -490,66 +563,6 @@ gchar * Untar(const char * name,const char * destdir)
 		} else printf("file not create - '%s'\n",cache.s);
 	}	
 	return g_strdup(cache.s);
-}
-
-//-----------------------------------------------------------------------------
-
-void OnButtonCopy( GtkButton* button, int _index_operation ) 
-{
-	GList * l = PanelGetSelected();
-	gchar * mes=0;
-	for ( int i=0; l; l = l->next,i++ )
-	{
-		mes=Untar((const char*)l->data,Panels[1-ActivePanel]->MyPath);
-	}
-	if(!mes)
-	{	
-		ExternalFileCopy(getuid(),TASK_COPY);
-	}
-}
-
-//-----------------------------------------------------------------------------
-
-void OnButtonMove( GtkButton* button, int index_operation ) 
-{
-	ExternalFileCopy(getuid(),TASK_MOVE);
-}
-
-//-----------------------------------------------------------------------------
-
-void OnButtonDelete( GtkButton* button, int on_dialog ) 
-{
-	int intrash;
-	ClassString mes;
-
-	if(IsAlreadyTrashed(Panels[ActivePanel]->MyPath))
-	{   
-		mes="Это файлы уже в корзине.\nУдалить безвозвратно?";
-		intrash=0;
-		on_dialog=1;
-	} else
-	{
-		const char * path_trash;
-		path_trash=Filename2TrashDir(Panels[ActivePanel]->MyPath);
-		if(!path_trash) 
-		{
-			mes="Корзина не найдена, удалить безвозвратно?";
-			intrash=0;
-			on_dialog=1;
-		} else
-		{
-			mes="Переместить в корзину?";
-			intrash=1;
-		}	
-	}
-
-	if(on_dialog)
-	{	
-		if(!DialogYesNo(mes.s)) return;
-	}	
-
-	GList * l = Panels[ActivePanel]->GetSelectedFiles();
-	if(intrash)	UtilsMoveInTrash(l); else UtilsUnlink(l);
 }
 
 //-----------------------------------------------------------------------------

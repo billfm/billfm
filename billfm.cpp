@@ -755,11 +755,6 @@ void MountGvfsArchive(void)
 
 void	OnButtonTest( GtkButton* button, int index_operation )
 {
-//	gtk_widget_hide((GtkWidget*)ProgressBar);
-//	gtk_widget_hide((GtkWidget*)PulseBar);	
-	GtkWidget *window;
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_widget_show_all (window);
 
 }
 

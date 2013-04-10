@@ -15,6 +15,8 @@
 #define TASK_FIND 			8
 #define TASK_SMB_MOUNT		9
 #define TASK_READ_TAR		10
+#define TASK_DIR_RIGHT		11
+#define TASK_FILE_RIGHT		12
 
 #define SOURCE_NO_DELETE	0
 #define SOURCE_DELETE 		1
@@ -98,6 +100,7 @@ class InfoOperation
 	int progress;
     long int all_size;			
 	int	all_link;
+	mode_t st_mode;
 	InfoOperation()
 	{
         progress=-1;
@@ -177,6 +180,7 @@ gchar * Untar(const char * name,const char * fullname);
 int IsZip(const char * fullname);
 int IsTar(const char * destdir);
 int IsRar(const char * fullname);
+int IsDeb(const char * fullname);
 int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest);
 extern gchar * util_path;
 extern gchar * app_path;
@@ -184,3 +188,5 @@ extern gchar * config_path;
 void DrawProgress(void);
 void InitExtUtils(void);
 void ExternalFileCopy4(uid_t user,int operation,GList * l, const char * dest_dir);
+gchar * GetDeletedTime(const char * source);
+void SetRightDir(const char * source, int mask);

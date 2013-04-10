@@ -22,6 +22,7 @@ const char tmp[]="/tmp/billfm/find";
 const char * SourceTar;
 int CountReadStrings;
 
+int PrintDeb(const char * buf);
 int PrintTar(const char * buf);
 int PrintZip(const char * buf);
 int PrintRar(const char * buf);
@@ -251,6 +252,16 @@ int main( int    argc, char **argv )
 			CountReadStrings=0;
 			RarPassword=0;
 			LoadGets(outfile.s,PrintRar);
+		}
+
+		if(IsDeb(SourceTar))
+		{
+			ClassString com=g_strdup_printf("ar vt  '%s' > dir.lst",SourceTar);
+			system(com.s); 
+			ClassString outfile=g_build_filename(DestDir,"dir.lst",NULL);
+			CountReadStrings=0;
+			RarPassword=0;
+			LoadGets(outfile.s,PrintDeb);
 		}
 
 	}
@@ -539,6 +550,39 @@ int PrintRar(const char * buf)
 	{
 		mkfile(fullname,size);
 	        utime(fullname, &times );
+	}
+
+	return 0;
+} 
+
+//------------------------------------------------------------------------------
+
+int PrintDeb(const char * buf)
+{
+//rw-r--r-- 0/0      4 Aug 23 16:48 2010 debian-binary
+//rw-r--r-- 0/0    959 Aug 23 16:48 2010 control.tar.gz
+//rw-r--r-- 0/0 243236 Aug 23 16:48 2010 data.tar.gz
+	long int size;
+	gchar right[16];
+	int	group;
+	int	owner;
+	gchar month[16];
+	int day;
+	gchar time[16];
+	int year;
+	gchar name[128];
+
+	sscanf(buf,"%s %d/%d %ld %s %d %s %d %s",right,&group,&owner,&size,month,&day,time,&year,name);
+
+	printf("%s %d/%d %ld %s %d %s %d %s\n",right,group,owner,size,month,day,time,year,name);
+
+	gchar * fullname=g_build_filename(DestDir,name,NULL);
+	if(!size) 
+	{
+		CreateDirInDir(fullname);
+	} else
+	{
+		mkfile(fullname,size);
 	}
 
 	return 0;
