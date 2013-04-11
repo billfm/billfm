@@ -18,6 +18,7 @@
 #include "utils.h"
 #include "fsmonitor.h"
 
+typedef void(*BUTTON_CALLBACK)(GtkButton*, int);
 
 int SelectedSidePanel;
 
@@ -63,7 +64,7 @@ GtkStatusbar* 	StatusBar;
 GtkWidget* 	SidePanel;
 GtkWidget* 	OnePanel;
 GtkWindow*	topWindow;         
-GtkEntry * EntryPath;
+GtkEntry *  EntryPath;
 
 int ActivePanel=1;
 
@@ -71,6 +72,22 @@ gboolean OnSecondTimer(gpointer data);
 int path_entry_try_load(const char * fullname);
 
 void * ThreadCopy(void * arg);
+
+//-----------------------------------------------------------------------------
+
+void OnButtonHiddenList( GtkButton* button, int data )
+{
+	Panels[ActivePanel]->OnlyHiddenList=1-Panels[ActivePanel]->OnlyHiddenList;
+	Panels[ActivePanel]->reload();
+}
+
+//-----------------------------------------------------------------------------
+
+void OnButtonBlackList( GtkButton* button, int data )
+{
+	Panels[ActivePanel]->OnlyBlackList=1-Panels[ActivePanel]->OnlyBlackList;
+	Panels[ActivePanel]->reload();
+}
 
 //-----------------------------------------------------------------------------
 
@@ -330,11 +347,11 @@ static gboolean on_main_window_keypress( GtkWidget * widget, GdkEventKey* event,
 	switch (event->keyval) 
 	{
 		case GDK_Right:
-			Panels[ActivePanel]->BackPanel();
+			OnButtonUp(0,Panels[ActivePanel]);
 		break;
 
 		case GDK_Left:
-			OnButtonUp(0,Panels[ActivePanel]);
+			Panels[ActivePanel]->BackPanel();
 		break;
 
 		case GDK_F2:
@@ -455,7 +472,7 @@ void SetActivePanel(int index)
 
 //-----------------------------------------------------------------------------
 
-void OnButtonChangeActive( GtkButton* button, void * datauser )
+void OnButtonChangeActive( GtkButton* button, int data )
 {
 	SetActivePanel(1-ActivePanel);
 }
@@ -492,15 +509,44 @@ void fm_main_quit  (void)
 
 //-----------------------------------------------------------------------------
 
-void BuildPathBox(GtkWidget * parent)
+GtkWidget * xpm_box(const char * xpm_filename)
 {
+    GtkWidget *box;
+    GtkWidget *image;
+    box = gtk_hbox_new (FALSE, 0);
+    gtk_container_set_border_width (GTK_CONTAINER (box), 1);
+    image = gtk_image_new_from_file (xpm_filename);
+    gtk_box_pack_start (GTK_BOX (box), image, FALSE, FALSE, 1);
+    gtk_widget_show (image);
+    return box;
+}
+
+//-----------------------------------------------------------------------------
+
+void CreateButton(GtkWidget * owner, const char * picname, BUTTON_CALLBACK func)
+{
+	GtkWidget * button = gtk_button_new();
+    gtk_box_pack_start (GTK_BOX (owner), button, FALSE, FALSE, 0);
+	GtkWidget* pic = xpm_box(picname);
+	gtk_widget_show (pic);
+    gtk_container_add (GTK_CONTAINER (button),pic);
+	gtk_widget_show(button);
+	g_signal_connect( G_OBJECT(button ), "clicked",     G_CALLBACK( func ), 0 );	
+}
+
+//-----------------------------------------------------------------------------
+
+void BuildPathBox()
+{
+    GtkWidget * parent=(GtkWidget *)gtk_builder_get_object( builder, "hbox1");
+
 	gboolean homogeneous=0;
     gint     spacing=1;
     gboolean expand=0;
     gboolean fill=0;
 	guint    padding=0;
 
-	GtkWidget *box;
+	GtkWidget * box;
 	char str[16];
 	str[0]=0;
     /* Создаём новый контейнер hbox соответствующий homogeneous
@@ -530,34 +576,20 @@ void BuildPathBox(GtkWidget * parent)
 	}
 
     EntryPath = (GtkEntry*)ptk_path_entry_new();
+
     gtk_box_pack_start (GTK_BOX (box), (GtkWidget*)EntryPath, FALSE, FALSE, 0);
     gtk_widget_show ((GtkWidget*)EntryPath);
-
-
     gtk_box_pack_start (GTK_BOX (parent), box, FALSE, FALSE, 0);
-    gtk_widget_show (box);
+	CreateButton(box, ICON_GNOME_BACK, OnButtonBack);
+	gtk_widget_show (box);
 
 	box = gtk_hbox_new (homogeneous, spacing);
-	
-	GtkWidget* button = gtk_button_new_with_label("Back");
-    gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
-	gtk_widget_show(button);
-	g_signal_connect( G_OBJECT(button ), "clicked",     G_CALLBACK( OnButtonBack ), 0 );	
 
-	button = gtk_button_new_with_label("Home");
-    gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
-	gtk_widget_show(button);
-	g_signal_connect( G_OBJECT(button ), "clicked",     G_CALLBACK( OnButtonHome ), 0 );	
-
-	button = gtk_button_new_with_label("Reload");
-    gtk_box_pack_end (GTK_BOX (box), button, FALSE, FALSE, 0);
-	gtk_widget_show(button);
-	g_signal_connect( G_OBJECT(button ), "clicked",     G_CALLBACK( OnButtonReload ), 0 );	
-
-	button = gtk_button_new_with_label("Active");
-    gtk_box_pack_end (GTK_BOX (box), button, FALSE, FALSE, 0);
-	gtk_widget_show(button);
-	g_signal_connect( G_OBJECT(button ), "clicked",     G_CALLBACK( OnButtonChangeActive ), 0 );	
+	CreateButton(box, ICON_GNOME_BACK, OnButtonBack);
+	CreateButton(box, ICON_GNOME_RELOAD, OnButtonReload);
+	CreateButton(box, ICON_GNOME_ACTIVE, OnButtonChangeActive);
+	CreateButton(box, ICON_GNOME_HIDE_LIST, OnButtonHiddenList);	
+	CreateButton(box, ICON_GNOME_BLACK_LIST, OnButtonBlackList);		
 
 	GtkWidget *box1=(GtkWidget *)gtk_builder_get_object( builder, "hbox2");	
     gtk_box_pack_start (GTK_BOX (box1), box, FALSE, FALSE, 0);
@@ -659,9 +691,8 @@ int main( int    argc, char **argv )
 	gtk_widget_show_all( GTK_WIDGET (topWindow) );	
 
 	side_panel.LoadDevice();
-    GtkWidget *box1=(GtkWidget *)gtk_builder_get_object( builder, "hbox1");
 
-    BuildPathBox (box1);
+    BuildPathBox();
 
 	LoadDefaultPath(argc,argv); 
 

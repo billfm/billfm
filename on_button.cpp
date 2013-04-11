@@ -458,6 +458,15 @@ void OnButtonEdit( GtkButton * b, int flags )
 
 //-----------------------------------------------------------------------------
 
+void	Execute(const char * com)
+{
+		printf("Start unpack:%s \n",com);
+		system(com);
+		printf("Unpack end \n");	
+}
+
+//-----------------------------------------------------------------------------
+
 gchar * Untar(const char * name,const char * destdir)
 {
 	ClassString archve = GetArchivePath();
@@ -512,15 +521,13 @@ gchar * Untar(const char * name,const char * destdir)
 		{
 			com=g_strdup_printf("cd '%s'; tar -x --file='%s' './%s'", unpack_dir,zip.s,inzip.s);
 		}	else com=g_strdup_printf("cd '%s'; tar -x --file='%s' '%s'", unpack_dir,zip.s,inzip.s);
-		printf("Start unpack:%s \n",com.s);
-		system(com.s);
-		printf("Unpack end \n");	
+		Execute(com.s);
 	}	else
 
 	if(IsDeb(zip.s))
 	{	
 		com=g_strdup_printf("cd '%s'; ar x '%s' '%s'", unpack_dir,zip.s,inzip.s);
-		system(com.s);
+		Execute(com.s);
 	}	else
 		
 	if(IsZip(zip.s))
@@ -532,13 +539,11 @@ gchar * Untar(const char * name,const char * destdir)
 				com=g_strdup_printf("cd '%s'; unzip -o '%s' '%s/*'", unpack_dir, zip.s, inzip.s);
 			else com=g_strdup_printf("cd '%s'; unzip -o '%s' '%s'", unpack_dir, zip.s, inzip.s);
 		}
-		system(com.s);
+		Execute(com.s);
 		
 	}	else
 	if(IsRar(zip.s))
 	{	
-//		flag_password=0;
-//		CommandGets(com.s,EchoRar);
 		if(inzip.s[0]=='*')
 		{
 			ClassString password=InputPassword();
@@ -547,9 +552,7 @@ gchar * Untar(const char * name,const char * destdir)
 			                    unpack_dir,password.s,zip.s,&inzip.s[1]);
 			printf("%s\n",com.s);
 		} 	else com=g_strdup_printf("cd '%s'; unrar -p- x '%s' '%s'", unpack_dir,zip.s,inzip.s);			
-		printf("Start unpack:%s \n",com.s);
-		system(com.s);
-		printf("Unpack end \n");	
+		Execute(com.s);
 	}	else return 0;
 	
 	cache=g_build_filename(unpack_dir,inzip.s,NULL);

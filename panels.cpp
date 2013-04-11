@@ -16,6 +16,8 @@ static int sel(const struct dirent * d);
 
 ClassPanel::ClassPanel()
 {
+	OnlyHiddenList=0;
+	OnlyBlackList=0;
 	SavePath=0;
 	ShowHidden=1;
 	InDropboxFlag=0;
@@ -239,6 +241,8 @@ void ClassPanel::SetModel(GtkTreeModel * model)
 	{ 
 		gtk_tree_view_set_model(treeview, model);
 	}
+//	OnlyHiddenList=0;
+//	OnlyBlackList=0;
 }
 
 //-----------------------------------------------------------------------------
@@ -303,20 +307,31 @@ static int sel(const struct dirent * d)
 
 int ClassPanel::IsBlackFile(const char * name, const char * ext)
 { 
-	if(ShowHidden && name[0]=='.') return 1;
-
-	if(!ext) return 0;
-	GList* list=g_list_first(list_black_files);
-	while(list)
+	if(!OnlyHiddenList)
+	{	
+		if(ShowHidden && name[0]=='.') return 1;
+	} else
 	{
-		const char * str=(gchar *)list->data;
-		if(str && !strcmp(str,ext))
-		{
-			return 1;
-		}
-       list = (GList*)g_slist_next(list);
+		if(name[0]!='.') return 1;
 	}
- return 0;
+
+	int res=0;
+
+	if(ext)
+	{	
+		GList* list=g_list_first(list_black_files);
+		while(list)
+		{
+			const char * str=(gchar *)list->data;
+			if(str && !strcmp(str,ext))
+			{
+				res=1;
+				break;
+			}
+    	   list = (GList*)g_slist_next(list);
+		}
+	}	
+ return res-OnlyBlackList;
 }
 
 //-----------------------------------------------------------------------------
@@ -595,6 +610,7 @@ int ClassPanel::SetPropertyItem(GtkListStore *store, const char * fullname)
 
 	ClassString name=g_path_get_basename(fullname);
 	ClassString ext=GetExt(name.s);
+
 	
 	if(IsBlackFile(name.s,ext.s)) return 1;
 

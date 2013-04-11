@@ -229,26 +229,26 @@ int main( int    argc, char **argv )
 		chdir(DestDir);
 		NexString();
 		SourceTar =g_strdup(buffer);
-		ClassString outfile=g_build_filename(DestDir,"dir.lst",NULL);
+		ClassString outfile=g_build_filename(DestDir,".dir.lst",NULL);
 		if(IsTar(SourceTar))
 		{
-			ClassString com=g_strdup_printf("tar -tvf '%s' > dir.lst",SourceTar);
+			ClassString com=g_strdup_printf("tar -tvf '%s' > .dir.lst",SourceTar);
 			system(com.s); 
 			LoadGets(outfile.s,PrintTar);
 		} else
 		if(IsZip(SourceTar))
 		{
-			ClassString com=g_strdup_printf("unzip -l  '%s' > dir.lst",SourceTar);
+			ClassString com=g_strdup_printf("unzip -l  '%s' > .dir.lst",SourceTar);
 			system(com.s); 
-			ClassString outfile=g_build_filename(DestDir,"dir.lst",NULL);
+			ClassString outfile=g_build_filename(DestDir,".dir.lst",NULL);
 			CountReadStrings=0;
 			LoadGets(outfile.s,PrintZip);
 		}
 		if(IsRar(SourceTar))
 		{
-			ClassString com=g_strdup_printf("unrar vt  '%s' > dir.lst",SourceTar);
+			ClassString com=g_strdup_printf("unrar vt  '%s' > .dir.lst",SourceTar);
 			system(com.s); 
-			ClassString outfile=g_build_filename(DestDir,"dir.lst",NULL);
+			ClassString outfile=g_build_filename(DestDir,".dir.lst",NULL);
 			CountReadStrings=0;
 			RarPassword=0;
 			LoadGets(outfile.s,PrintRar);
@@ -256,9 +256,9 @@ int main( int    argc, char **argv )
 
 		if(IsDeb(SourceTar))
 		{
-			ClassString com=g_strdup_printf("ar vt  '%s' > dir.lst",SourceTar);
+			ClassString com=g_strdup_printf("ar vt  '%s' > .dir.lst",SourceTar);
 			system(com.s); 
-			ClassString outfile=g_build_filename(DestDir,"dir.lst",NULL);
+			ClassString outfile=g_build_filename(DestDir,".dir.lst",NULL);
 			CountReadStrings=0;
 			RarPassword=0;
 			LoadGets(outfile.s,PrintDeb);
@@ -334,6 +334,16 @@ int PrintTar(const char * buf)
 
 //------------------------------------------------------------------------------
 
+int IsDigit(const char * str)
+{
+	for(int i=0;i<strlen(str);i++)
+	{
+		if( (str[i]<'0') || (str[i]>'9') ) return 0;
+	}
+	return 1;
+}
+
+
 int PrintZip(const char * buf)
 {
 //406  1999-10-12 01:27   rxLib567/RX/RxNews.txt
@@ -349,6 +359,7 @@ int PrintZip(const char * buf)
 	gchar * p=(gchar*)buf;
 	char str[strlen(buf)+1];
 	sscanf(p," %s ",str);
+	if(!IsDigit(str)) return 1;
 	sscanf(p," %ld ",&size);
 
 	p=strstr(p,str);//date

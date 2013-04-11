@@ -106,7 +106,8 @@ void DialogFileProperty(const char * fullname)
 	    gtk_entry_set_text(entry,str.s);
 
 		str=showfilesize(filestat.st_blocks*filestat.st_blksize);
-		str=g_strdup_printf("%ld %s",filestat.st_blocks*filestat.st_blksize,str.s);
+//		str=g_strdup_printf("%ld %s",filestat.st_blocks*filestat.st_blksize,str.s);
+		str=g_strdup_printf("%ld %ld",filestat.st_blocks,filestat.st_blksize);		
 		entry = (GtkEntry*) gtk_builder_get_object( builder, "size_on_disk");
 	    gtk_entry_set_text(entry,str.s);
 

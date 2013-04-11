@@ -28,6 +28,13 @@ using namespace std;
 #define		ICON_GNOME_COMPUTER  		16
 #define		ICON_GNOME_SMB_SHARE  		17
 #define		ICON_GNOME_COMMANDER  		18
+#define		ICON_GNOME_BACK		  		"/home/vik/billfm/icons/back.png"
+#define		ICON_GNOME_RELOAD	  		"/home/vik/billfm/icons/reload.png"
+#define		ICON_GNOME_ACTIVE   		"/home/vik/billfm/icons/object-flip-horizontal.png"
+#define		ICON_GNOME_BLACK_LIST  		"/home/vik/billfm/icons/image-missing.png"
+#define		ICON_GNOME_HIDE_LIST  		"/home/vik/billfm/icons/security-medium.png"
+
+
 
 #define		FIRST_FREE_INDEX			19
 
@@ -81,7 +88,9 @@ class ClassPanel
     ExoIconView*	iconview;
 	GtkTreeView*	treeview;
  public:
-    int SavePath;
+	int OnlyHiddenList;
+	int OnlyBlackList;
+	int SavePath;
 	int ShowHidden;
 	int InDropboxFlag;
 	int OkSearchFlag;		
