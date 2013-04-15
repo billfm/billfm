@@ -15,6 +15,8 @@ static GtkLabel * prompt;
 int result=-1;
 int ResultCopyLink=-1;
 
+GtkBuilder* CreateForm(const char * name);
+
 //-----------------------------------------------------------------------------
 
 void CreateNewDirDialog(const char * workdir)
@@ -123,28 +125,6 @@ static void OnDialogOverrideClick( GtkButton* button, int res )
 	}
 	gtk_widget_destroy( (GtkWidget*) dialog );
 	dialog=NULL;
-}
-
-//-----------------------------------------------------------------------------
-
-GtkBuilder* CreateForm(const char * name)
-{
-	GtkBuilder* builder = gtk_builder_new();
-	GError *error = NULL;
-	ClassString form = g_strdup_printf("%s/billfm/forms/%s",g_get_home_dir(),name);
-	if (!g_file_test( form.s, G_FILE_TEST_EXISTS ))
-	{
-		form = g_strdup_printf("/usr/share/billfm/%s",name);
-	}	
-
-	if( ! gtk_builder_add_from_file( builder, form.s, &error ) )
-	{
-		g_warning( "%s\n", error->message );
-		ShowMessage3(0,"Ошибка загрузки формы",error->message);
-		g_free( error );
-		return NULL;
-	} 
- return builder;
 }
 
 //-----------------------------------------------------------------------------
@@ -477,4 +457,38 @@ int LinkDialogCopy(InfoOperation * fo, const char * source, const char * dest)
 	return ResultCopyLink;
 }	
 	
+//-----------------------------------------------------------------------------
+
+GtkBuilder* CreateForm(const char * name)
+{
+	ClassString form1 = g_build_filename(app_path,"forms",name,NULL);	
+	ClassString form2 = g_build_filename("/usr/share/billfm/forms",name,NULL);
+	ClassString form3 = g_build_filename(g_get_home_dir(),".config/billfm/forms",name,NULL);	 		
+
+	gchar * form=form1.s;
+	if(!g_file_test(form,G_FILE_TEST_EXISTS))
+	{
+		form=form2.s;
+		if(!g_file_test(form,G_FILE_TEST_EXISTS))
+		{
+			form=form3.s;
+			if(!g_file_test(form,G_FILE_TEST_EXISTS))
+			{
+				ClassString mes=g_strdup_printf("%s\n%s\n%s\n",form1.s,form2.s,form3.s);
+				ShowMessage3(0,"Forms not found",mes.s);
+				return NULL;				
+			}	
+		}	
+	}	
+
+	GtkBuilder* builder = gtk_builder_new();
+	GError *error = NULL;
+	if(!gtk_builder_add_from_file(builder,form,&error))
+	{
+		ShowMessage3(0,"Ошибка загрузки формы",error->message);
+		return NULL;
+	} 
+ return builder;
+}
+
 //-----------------------------------------------------------------------------

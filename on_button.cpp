@@ -138,12 +138,6 @@ void OnButtonSame( GtkButton* button, int index_operation )
 
 void OnButtonRun( GtkButton* button, int index_operation ) 
 {
-	ClassString command=g_strdup("xset dpms 10 10 10");
-	system(command.s);
-	command=g_strdup("xtrlock");
-	system(command.s);
-	command=g_strdup("xset dpms 600 600 600");
-	system(command.s);	
 }
 
 //-----------------------------------------------------------------------------

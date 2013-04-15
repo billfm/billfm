@@ -1,0 +1,5 @@
+'Заметки' 'leafpad /home/vik/Dropbox/bill/readme.1 &'
+'Блокировка' '/home/vik/Install/lock-monitor.sh'
+'Компилять gets-copy' '/home/vik/billfm/z &'
+'bill2dropbox' '/home/vik/Install/bill2dropbox &'
+

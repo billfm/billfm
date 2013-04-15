@@ -750,30 +750,6 @@ void FileCopyFunc(const char * source, const char * dest, InfoOperation * fo)
 
 //-----------------------------------------------------------------------------
 
-gchar * InfoDir(GList * l)
-{
-
-	StartFileOperation();
-	InfoOperation fo;
-	fo.func=TASK_INFO;
-
-//    fo.log = open(PATH_INFO_LOG,O_WRONLY);
-	for ( ; l; l = l->next )
-	{
-		gchar* source = (gchar*) l->data;
-		if(cancel_all) break;
-		ParserDir(source,"/dev/null",&fo,0);
-	}
-
-	ClassString size=showfilesize(all_size);
-	if(fo.log>0) close(fo.log);
-	return g_strdup_printf("Dirs %d, files %d,hidden=%d, common size %ld %s",
-	                       all_dirs,all_files,all_hidden,all_size,size.s);
-
-}
-
-//-----------------------------------------------------------------------------
-
 long int GetFreeSpace2(const char * _name)
 {
 	ClassString name=g_strdup(_name);
@@ -944,9 +920,37 @@ void SetRightDir(const char * source,int mask)
 
 //-----------------------------------------------------------------------------
 
+gchar * InfoDir(GList * l)
+{
+	ClassString com=g_strdup_printf("gksudo echo &");
+	system(com.s);
+	StartFileOperation();
+	InfoOperation fo;
+	fo.func=TASK_INFO;
+
+//    fo.log = open(PATH_INFO_LOG,O_WRONLY);
+	for ( ; l; l = l->next )
+	{
+		gchar* source = (gchar*) l->data;
+		if(cancel_all) break;
+		ParserDir(source,"/dev/null",&fo,0);
+	}
+    all_size=fo.all_size;
+	ClassString size=showfilesize(all_size);
+	if(fo.log>0) close(fo.log);
+
+	ClassString mes=g_strdup_printf("Dirs %d, files %d,hidden=%d, common size %ld %s ",
+	                       all_dirs,all_files,all_hidden,all_size,size.s);
+	if(!fo.right_error) return g_strdup(mes.s);
+	 else return g_strdup_printf("Error access %d, %s",fo.right_error,mes.s);
+	system("sudo -K"); 	
+}
+
+//-----------------------------------------------------------------------------
+
 static void ParserDir(const char * source,  const char * dest, InfoOperation * fo, int level)
 {
-	if(fo->Lstat_source(source, "ParserDir - Не открывается источник"))
+	if(fo->Lstat_source(source, "ParserDir - @Не открывается источник"))
 	{	
 		printf("ERROR: %s\n",source);
 		return;
@@ -964,7 +968,7 @@ static void ParserDir(const char * source,  const char * dest, InfoOperation * f
 			}
 		}	
 		
-		if(strstr(dest,source))
+		if(!strcmp(dest,source))
 		{
 			ClassString mes = g_strdup_printf("Копирование в себя\nИсточник: '%s'\nПолучатель: %s",source,dest);
             ShowMessage3(0,"Операция отменена",mes.s);
@@ -983,10 +987,15 @@ static void ParserDir(const char * source,  const char * dest, InfoOperation * f
 		{
 			if(!SizeDirShow)
 			{
-				ClassString mes = g_strdup_printf("Error open source dir !\n Source file '%s'\n Error (%d) '%s'",
-    	           source,errno,strerror(errno));
-
-				ShowCancel(mes.s);
+				if(fo->func==TASK_INFO)
+				{
+					fo->right_error++;
+				}	else
+				{	
+					ClassString mes = g_strdup_printf("Error open source dir !\n Source file '%s'\n Error (%d) '%s'",
+    		           source,errno,strerror(errno));
+					ShowCancel(mes.s);
+				}	
 			}	
 			return;
 	     }
@@ -1031,6 +1040,12 @@ static void ParserDir(const char * source,  const char * dest, InfoOperation * f
 		}
 		all_size+=fo->source_size;
 		OperationFile(source,dest,fo);
+
+		if(S_ISREG(fo->source_mode) && !strstr(source,"/proc/kcore"))
+		{
+			fo->all_size+=fo->source_size;
+		}	
+			
 	}
 
 }

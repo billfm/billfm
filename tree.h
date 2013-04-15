@@ -30,9 +30,10 @@ using namespace std;
 #define		ICON_GNOME_COMMANDER  		18
 #define		ICON_GNOME_BACK		  		"/home/vik/billfm/icons/back.png"
 #define		ICON_GNOME_RELOAD	  		"/home/vik/billfm/icons/reload.png"
-#define		ICON_GNOME_ACTIVE   		"/home/vik/billfm/icons/object-flip-horizontal.png"
+#define		ICON_GNOME_ACTIVE   		"/home/vik/billfm/icons/change-active.png"
 #define		ICON_GNOME_BLACK_LIST  		"/home/vik/billfm/icons/image-missing.png"
 #define		ICON_GNOME_HIDE_LIST  		"/home/vik/billfm/icons/security-medium.png"
+#define		ICON_GNOME_SAME_PANEL  		"/home/vik/billfm/icons/object-flip-horizontal.png"
 
 
 
@@ -351,7 +352,8 @@ void CopyProperty(const char * source, const char * dest);
 void InsertInListDropbox(int num, const char * fullname);
 int InDropbox(int num,const char * path);
 int PanelUpdateItemDropbox(int num,gchar * tagname);
-void OnButtonDiff( GtkButton* button, int index_operation );
+void OnButtonDiff(GtkButton* button, int index_operation);
+void OnButtonSame(GtkButton* button, int index_operation);
 void ConnectMemuSignal();
 void UtilsSaveFiles(const char * name);
 int  find_userbin_mime(const char * p);

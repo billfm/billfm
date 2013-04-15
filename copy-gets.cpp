@@ -122,10 +122,13 @@ void LoadList(void)
  printf("copy gets end\n");
 }
 
+gchar * app_path;
+
 //------------------------------------------------------------------------------
 
 int main( int    argc, char **argv )
 {
+ app_path=g_path_get_dirname(argv[0]);
  int operation=TASK_COPY;
  gtk_init( &argc, &argv );
  

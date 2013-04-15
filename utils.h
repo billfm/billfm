@@ -100,6 +100,7 @@ class InfoOperation
 	int progress;
     long int all_size;			
 	int	all_link;
+	int right_error;
 	mode_t st_mode;
 	InfoOperation()
 	{
@@ -118,6 +119,7 @@ class InfoOperation
 		dest_size=0;
 		dest_errno=0;
 		all_link=0;
+		right_error=0;		
 	};
 	int Lstat_dest(const char *file_name, const char * mes);
 	int Lstat_dest_new(const char *file_name, const char * mes);		

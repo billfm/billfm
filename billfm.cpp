@@ -279,6 +279,28 @@ static gboolean on_main_window_release( GtkWidget * widget, GdkEventKey* event, 
 	}
     return FALSE;
 }
+//-----------------------------------------------------------------------------
+
+static gboolean OnPanelKeypress( GtkWidget * widget, GdkEventKey* event, gpointer user_data)
+{
+	switch (event->keyval) 
+	{
+		case GDK_Delete:
+			OnButtonDelete( NULL, 0 );
+		break;
+
+		case GDK_Right:
+			OnButtonUp(0,Panels[ActivePanel]);
+	    return TRUE;
+
+
+		case GDK_Left:
+			Panels[ActivePanel]->BackPanel();
+	    return TRUE;
+			
+	}
+    return FALSE;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -346,13 +368,6 @@ static gboolean on_main_window_keypress( GtkWidget * widget, GdkEventKey* event,
 
 	switch (event->keyval) 
 	{
-		case GDK_Right:
-			OnButtonUp(0,Panels[ActivePanel]);
-		break;
-
-		case GDK_Left:
-			Panels[ActivePanel]->BackPanel();
-		break;
 
 		case GDK_F2:
 			Panels[ActivePanel]->OnButtonEditCell();
@@ -388,10 +403,6 @@ static gboolean on_main_window_keypress( GtkWidget * widget, GdkEventKey* event,
 			                                  Panels[ActivePanel]->get_path() );
 			system(com.s);
 		}	
-		break;
-
-		case GDK_Delete:
-			OnButtonDelete( NULL, 0 );
 		break;
 
 		case GDK_Shift_L:
@@ -450,7 +461,7 @@ void InitFolder(gchar * argv0)
 //-----------------------------------------------------------------------------
 
 void OnButtonUp( GtkButton* button, void * datauser )
-{
+{ 
 	ClassPanel * panel=(ClassPanel *)(datauser);
 	ClassString path = g_path_get_dirname( panel->MyPath );
 	panel->SavePath=1;
@@ -492,6 +503,7 @@ void InitPanel(ClassPanel * panel)
 	str = g_strdup_printf("scrolledwindow%d", panel->MyIndex + 1);
 	GtkWidget * widget = panel->GetWidget();
 	gtk_container_add( GTK_CONTAINER(gtk_builder_get_object( builder, str)), widget );
+	g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(OnPanelKeypress), (void*)panel);
 	g_free(str);
 
 /**/
@@ -580,7 +592,7 @@ void BuildPathBox()
     gtk_box_pack_start (GTK_BOX (box), (GtkWidget*)EntryPath, FALSE, FALSE, 0);
     gtk_widget_show ((GtkWidget*)EntryPath);
     gtk_box_pack_start (GTK_BOX (parent), box, FALSE, FALSE, 0);
-	CreateButton(box, ICON_GNOME_BACK, OnButtonBack);
+
 	gtk_widget_show (box);
 
 	box = gtk_hbox_new (homogeneous, spacing);
@@ -590,7 +602,8 @@ void BuildPathBox()
 	CreateButton(box, ICON_GNOME_ACTIVE, OnButtonChangeActive);
 	CreateButton(box, ICON_GNOME_HIDE_LIST, OnButtonHiddenList);	
 	CreateButton(box, ICON_GNOME_BLACK_LIST, OnButtonBlackList);		
-
+	CreateButton(box, ICON_GNOME_SAME_PANEL, OnButtonSame);
+	
 	GtkWidget *box1=(GtkWidget *)gtk_builder_get_object( builder, "hbox2");	
     gtk_box_pack_start (GTK_BOX (box1), box, FALSE, FALSE, 0);
     gtk_widget_show (box);

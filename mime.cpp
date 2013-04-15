@@ -530,7 +530,6 @@ static int LoadIcon(const char * buf)
  
 void init_default_icon(void)
 {
-//	ClassString setfile = g_strdup_printf("%s/.config/billfm/default-icon.txt",g_get_home_dir());
 	ClassString setfile=g_build_filename(config_path,"default-icon.txt",NULL);
 	LoadGets(setfile.s,LoadIcon);
     setfile=g_build_filename(config_path,"/icons/emblem-symbolic-link.png",NULL);

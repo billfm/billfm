@@ -146,6 +146,13 @@ void OnMenuSudoCopy(GtkObject *object, gpointer user_data)
 
 //-----------------------------------------------------------------------------
 
+void OnMenuSudoMove(GtkObject *object, gpointer user_data)
+{
+	ExternalFileCopy(0,TASK_MOVE);
+}
+
+//-----------------------------------------------------------------------------
+
 void OnCreateDir(GtkObject *object, gpointer user_data)
 {
 	const char * workdir = Panels[ActivePanel]->get_path();
@@ -249,7 +256,56 @@ void miApplication(GtkObject *object, gpointer user_data)
 	if(SetApplication(app.s,filename.s)) SetApplication(filename.s,app.s);
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+void OnMenuUserCommand1(GtkObject *object, gpointer user_data)
+{
+	ClassString command=g_strdup("xset dpms 10 10 10");
+	system(command.s);
+	command=g_strdup("xtrlock");
+	system(command.s);
+	command=g_strdup("xset dpms 600 600 600");
+	system(command.s);	
+}
+
+//-----------------------------------------------------------------------------
+
+static int UserMenuCount;
+#define MAX_USER_COMMAND	20
+static char* UserCommandList[MAX_USER_COMMAND];
+
+void OnMenuUserCommand(GtkObject *object, gpointer user_data)
+{
+	int i=(int)(long int)user_data;
+	system(UserCommandList[i]);	
+}
+
+static int LoadUserMenu(const char * buf)
+{ 
+	if(UserMenuCount>=MAX_USER_COMMAND) return 1;
+
+	gchar * p=(gchar*)strstr(&buf[1],"'");
+	if(!p) return 0;
+	*p=0;
+	ClassString name=g_strdup_printf("%s",&buf[1]);
+
+	p=(gchar*)strstr(&p[1],"'");
+	if(!p) return 0;
+	p++;
+	gchar * p1=(gchar*)strstr(p,"'");
+	if(!p1) return 0;
+	*p1=0;
+	
+	UserCommandList[UserMenuCount]=g_strdup(p);
+	GtkWidget* menu = (GtkWidget *)gtk_builder_get_object( builder, "menu5" );
+	GtkImageMenuItem* menuitem = (GtkImageMenuItem *)gtk_menu_item_new_with_label(name.s);
+	if(menuitem) g_signal_connect((GtkWidget*)menuitem, "activate", GCallback (OnMenuUserCommand),(void*)UserMenuCount);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu),(GtkWidget*) menuitem);
+	UserMenuCount++;
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
 
 void ConnectMemuSignal()
 {
@@ -260,81 +316,96 @@ void ConnectMemuSignal()
 		"miOnePanel",
 		"miModePanel",
 		"miBookmark",
+
 		"miSelectAll",
 		"miUnselectedAll",
 		"miSelectPattern",
 		"miSymlink",
 		"miSudoView",
+
 		"miSudoEdit",		
 		"miDiff1",
 		"miDiff2",
 		"miDiff3",
 		"miSudoClearTrash",
+
 		"miLoadList",
 		"miSaveList",
 		"miCopyFar",
 		"miSudoCreateDir",
 		"miSudoCopy",
+
 		"miClearNet",
 		"miScanNet",
 		"miMountSmb",
 		"miUmountSmb",
 		"miMountSmbRead",
+
 		"miApplication",
 		"miToLower",
 		"miToUpper",
 		"miHardlink",
 		"miDeletelinkAndFile",
+
 		"miSelectBreakLink",
 		"miLastOperation",
+		"miSudoMove",		
 		0
 	};
 
 	GCallback sig[] =
 	{
 		(GCallback) OnMenuExit,
-
 		(GCallback) OnMenuSidePanel,
 		(GCallback) OnMenuOnePanel,
 		(GCallback) OnButtonModeView,
 		(GCallback) miCreateBookmark,
+
 		(GCallback) OnButtonSelAll,
 		(GCallback) OnButtonUnselAll,
 		(GCallback) OnButtonSelPattern,
 		(GCallback) miCreateSymlink,
-
 		(GCallback) OnMenuSudoView,
+
 		(GCallback) OnMenuSudoEdit,
 		(GCallback) OnMenuDiff1,
 		(GCallback) OnMenuDiff2,
 		(GCallback) OnMenuDiff3,
 		(GCallback) OnMenuSudoClearTrash,				
+
 		(GCallback) OnMenuLoadList,
 		(GCallback) OnMenuSaveList,
 		(GCallback) OnMenuFarCopy,
 		(GCallback) OnCreateDir,
 		(GCallback) OnMenuSudoCopy,
+
 		(GCallback) miClearNet,
 		(GCallback) miScanNet,
 		(GCallback) miMountSmb,
 		(GCallback) miUmountSmb,		
 		(GCallback) miMountSmbRead,
+
 		(GCallback) miApplication,
 		(GCallback) miToLower,
 		(GCallback) miToUpper,
 		(GCallback) miCreateHardlink,
 		(GCallback) miDeletelinkAndFile,
+
 		(GCallback) miBreakLink,
 		(GCallback) miLastOperation,
+		(GCallback) OnMenuSudoMove,		
 		0
 	}; 
 
-	GtkImageMenuItem * menu_item;
+	GtkImageMenuItem * menuitem;
 	for(int i=0; items[i]; i++)
 	{	
-		menu_item = (GtkImageMenuItem *)gtk_builder_get_object( builder, items[i] );
-		if(menu_item) g_signal_connect((GtkWidget*) menu_item, "activate", sig[i],0 );
+		menuitem = (GtkImageMenuItem *)gtk_builder_get_object( builder, items[i] );
+		if(menuitem) g_signal_connect((GtkWidget*) menuitem, "activate", sig[i],0 );
 	}	
+
+	ClassString setfile=g_build_filename(config_path,"user-menu.txt",NULL);
+	LoadGets(setfile.s,LoadUserMenu);
 }
 
 //-----------------------------------------------------------------------------
