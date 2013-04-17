@@ -424,7 +424,7 @@ void InitFolder(gchar * argv0)
 {
 	struct stat dest_stat;
 	app_path=g_path_get_dirname(argv0);
-	
+	printf("app_path %s\n",argv0);	
 	ClassString str=g_path_get_dirname(PATH_INFO_LOG);
 	CreateDirInDir(str.s);
 	mknod(PATH_INFO_LOG,010777,0);
@@ -435,7 +435,7 @@ void InitFolder(gchar * argv0)
 
 	if(lstat(config_path, &dest_stat)) 
 		config_path=g_strdup_printf("%s/.config/billfm",app_path);
-
+	printf("config_path %s\n",config_path);
     str=g_build_filename(config_path,"bookmark",NULL);
 	CreateDirInDir(str.s);
 
@@ -453,7 +453,8 @@ void InitFolder(gchar * argv0)
     if(lstat(str.s, &dest_stat))  util_path=g_strdup("copy-gets");
 	 else util_path=g_strdup(str.s);
 
-//	menu_path=g_build_filename(g_get_home_dir(),".config/billfm/menu/",NULL);
+	printf("util_path %s\n",util_path);
+
     menu_path=g_build_filename(config_path,"menu",NULL);
 	CreateDirInDir(menu_path);
 }

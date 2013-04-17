@@ -39,6 +39,21 @@ gpointer ThreadPulse(gpointer data);
 
 //-----------------------------------------------------------------------------
 
+FILE * OpenCommandFile()
+{
+    const char filename[]="/tmp/billfm.txt";
+	unlink(filename);
+	FILE * f=fopen(filename,"w+"); 
+	if(!f)
+	{
+		ClassString mes=g_strdup_printf("Error open %s",filename);
+		ShowFileOperation(mes.s);
+	}
+	return f;
+}
+
+//-----------------------------------------------------------------------------
+
 void StartPulseBar()
 {
 	struct stat file_stat;
@@ -88,7 +103,8 @@ void ExternalListTar(const char * fullname, const char * dest_dir)
 {
 	CreateDirInDir(dest_dir);
 	ClassString com=g_strdup_printf("%s &",util_path);
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
+	FILE * f=OpenCommandFile(); 
+	if(!f) return;
 	fprintf(f,"READ_TAR\n");
 	fprintf(f,"%s\n",dest_dir);
 	fprintf(f,"%s\n",fullname);
@@ -102,7 +118,8 @@ void ExternalCreateDir(const char * dest_dir)
 {
 	ClassString com=g_strdup_printf("gksudo %s &",util_path);
 
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
+	FILE * f=OpenCommandFile(); 
+	if(!f) return;
 	fprintf(f,"CREATE_DIR\n");
 	fprintf(f,"%s\n",dest_dir);
 
@@ -162,7 +179,9 @@ void ExternalFind(const char * mask,const char * text, const char * dest_dir, in
 	ClearDir(PATH_FIND);
 	ClassString com=g_strdup_printf("%s &",util_path);
 
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
+	FILE * f=OpenCommandFile(); 
+	if(!f) return;
+
 	fprintf(f,"FIND\n");
 	fprintf(f,"%s\n",dest_dir);
 	fprintf(f,"%s\n",mask);
@@ -223,7 +242,9 @@ void ExternalClearTrash(const char * dest_dir)
 {
 	ClassString com=g_strdup_printf("gksudo %s &",util_path);
 	
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
+	FILE * f=OpenCommandFile(); 
+	if(!f) return;
+
 	fprintf(f,"CLEAR_TRASH\n");
 	fprintf(f,"%s\n",dest_dir);
 	fprintf(f,"%s\n",g_get_home_dir());
@@ -249,7 +270,9 @@ void ExternalFileCopy4(uid_t user,int operation,GList * l, const char * dest_dir
 		com=g_strdup_printf("%s &",util_path);
 	}	
 
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
+	FILE * f=OpenCommandFile(); 
+	if(!f) return;
+
 	if(operation==TASK_COPY)	fprintf(f,"COPY\n"); else
 	if(operation==TASK_MOVE)	fprintf(f,"MOVE\n");
 

@@ -21,7 +21,6 @@
 #define SOURCE_NO_DELETE	0
 #define SOURCE_DELETE 		1
 
-void ShowFileOperation(gchar * str);
 
 extern int SizeDirShow;
 
@@ -192,3 +191,4 @@ void InitExtUtils(void);
 void ExternalFileCopy4(uid_t user,int operation,GList * l, const char * dest_dir);
 gchar * GetDeletedTime(const char * source);
 void SetRightDir(const char * source, int mask);
+void ShowFileOperation(gchar * str);

@@ -100,6 +100,7 @@ void ClickMenuDeleteBookmark(GtkWidget *menuitem, gpointer userdata)
 	}	
 }
 
+
 //-----------------------------------------------------------------------------
 
 void view_popup_menu_clear_trash(GtkWidget *menuitem, gpointer userdata)

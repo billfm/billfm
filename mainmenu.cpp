@@ -13,7 +13,7 @@
 #include "utils.h"
 #include "fsmonitor.h"
 
-static void MountShared(int ReadOnly);
+//static void MountShared(int ReadOnly);
 int  SetApplication(const char * app, const char * filename);
 
 void CreateLink(const char * source,const char * dest_dir, int show_query,int type_link);
@@ -98,12 +98,12 @@ void miScanNet(GtkObject *object, gpointer user_data)
 
 void miMountSmbRead(GtkObject *object, gpointer user_data)
 {
-	MountShared(1);
+//	MountShared(1);
 }
 
 void miMountSmb(GtkObject *object, gpointer user_data)
 {
-	MountShared(0);
+//	MountShared(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -515,7 +515,7 @@ int SetApplication(const char * app, const char * filename)
 }
 
 //-----------------------------------------------------------------------------
-
+/*
 static void MountShared(int ReadOnly)
 {
 	gchar * fullname;
@@ -551,7 +551,9 @@ static void MountShared(int ReadOnly)
 //}							   
 
 	ClassString com=g_strdup_printf("gksudo %s &",util_path);
-	FILE * f=fopen("/tmp/billfm.txt","w+"); 
+	FILE * f=OpenCommandFile(); 
+	if(!f) return;
+
 	fprintf(f,"SMB_MOUNT\n");
 	fprintf(f,"%s\n",fullname);
 	fprintf(f,"%s\n",source.s);
@@ -561,7 +563,7 @@ static void MountShared(int ReadOnly)
 	system(com.s);
 //  gvfs-mount smb://10.20.12.34/d/	                       
 }
-
+*/
 //-----------------------------------------------------------------------------
 
 void OnMenuFarCopy(GtkObject *object, gpointer user_data)

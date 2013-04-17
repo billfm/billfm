@@ -139,7 +139,7 @@ int main( int    argc, char **argv )
  f=fopen("/tmp/billfm.txt","rt"); 
  if(!f)
  {
-  printf("Not open file !\n");
+  printf("Not open file /tmp/billfm.txt !\n");
   exit(0);
  }
 

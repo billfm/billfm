@@ -922,8 +922,6 @@ void SetRightDir(const char * source,int mask)
 
 gchar * InfoDir(GList * l)
 {
-	ClassString com=g_strdup_printf("gksudo echo &");
-	system(com.s);
 	StartFileOperation();
 	InfoOperation fo;
 	fo.func=TASK_INFO;
@@ -943,7 +941,6 @@ gchar * InfoDir(GList * l)
 	                       all_dirs,all_files,all_hidden,all_size,size.s);
 	if(!fo.right_error) return g_strdup(mes.s);
 	 else return g_strdup_printf("Error access %d, %s",fo.right_error,mes.s);
-	system("sudo -K"); 	
 }
 
 //-----------------------------------------------------------------------------
