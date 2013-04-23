@@ -1,3 +1,4 @@
+#include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
@@ -273,11 +274,17 @@ void InitDropbox()
 	ConnectDropbox();
     ClassString setfile=g_build_filename(config_path,"/icons/emblem-default.png",NULL);
 	PixbufEmblemDropboxOk=gdk_pixbuf_new_from_file_at_scale(setfile.s,8,8,1,0);
-    setfile=g_build_filename(config_path,"/icons/emblem-dropbox-syncing.png",NULL);
+	if(!PixbufEmblemDropboxOk)
+	{	
+		printf("Not load %s\n",setfile.s);
+		return;
+	}	
+
+	setfile=g_build_filename(config_path,"/icons/emblem-dropbox-syncing.png",NULL);
 	IconSync[0]=gdk_pixbuf_new_from_file(setfile.s, NULL);
 	if(!IconSync[0])
 	{	
-		printf("Not load PATH_ICON_DROPBOX_SYNC\n");
+		printf("Not load %s\n",setfile.s);
 		return;
 	}	
 	IconSync[1]=gdk_pixbuf_rotate_simple(IconSync[0],GDK_PIXBUF_ROTATE_COUNTERCLOCKWISE);

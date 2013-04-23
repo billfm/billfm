@@ -93,10 +93,10 @@ void OnButtonSide( GtkButton* button, int index_operation )
 
 void CreatePanel(int i, int mode)
 {
-	ClassPanel* panel;
-	if(mode==1) panel = new ClassIconPanel();
-	else if(mode==0) panel = new ClassTreePanel(); 
-	else return;
+	ClassPanel* panel=new ClassTreePanel(); 
+//	if(mode==1) panel = new ClassIconPanel();
+	//else if(mode==0) 	panel = new ClassTreePanel(); 
+//	else return;
 	panel->MyIndex=i;
 	Panels[i]=panel;
 	InitPanel(panel);	
@@ -511,10 +511,12 @@ gchar * Untar(const char * name,const char * destdir)
 	if(IsTar(zip.s))
 	{	
         ClassString base=g_path_get_dirname(inzip.s);
+		printf("`%s` base `%s`",inzip.s,base.s);
 		if(!strcmp(base.s,"."))
 		{
 			com=g_strdup_printf("cd '%s'; tar -x --file='%s' './%s'", unpack_dir,zip.s,inzip.s);
-		}	else com=g_strdup_printf("cd '%s'; tar -x --file='%s' '%s'", unpack_dir,zip.s,inzip.s);
+		}	else 
+			com=g_strdup_printf("cd '%s'; tar -x --file='%s' '%s'", unpack_dir,zip.s,inzip.s);
 		Execute(com.s);
 	}	else
 

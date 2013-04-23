@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <exo/exo.h>
 #include <errno.h>
 
 #include "tree.h"
@@ -143,8 +142,8 @@ gchar * EditFileName(const char * fullname)
             if ( g_file_test( to_path, G_FILE_TEST_EXISTS ) )
             {
 				gtk_label_set_text( prompt,
-                                    _( "The file name you specified already exists.\n"
-                                       "Please input a new one:" ) );
+                                    "The file name you specified already exists.\n"
+                                       "Please input a new one:");
             }
             else
             {
@@ -182,7 +181,7 @@ gchar * NewPattern(void)
     gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
 
     GtkWidget* entry1 = gtk_entry_new();
-    gtk_entry_set_text( GTK_ENTRY( entry1 ), _( "*.*" ) );
+    gtk_entry_set_text( GTK_ENTRY( entry1 ), "*.*");
     gtk_box_pack_start( GTK_BOX( box ), entry1, FALSE, FALSE, 4 );
 
     gtk_dialog_set_default_response( ( GtkDialog* ) dlg, GTK_RESPONSE_OK );
@@ -212,7 +211,7 @@ void CreateNewFileDialog(const char * workdir,const char * command)
 	GtkWidget* box;
     GtkWidget* entry;
 
-    dlg = gtk_dialog_new_with_buttons( _("Create new file"),
+    dlg = gtk_dialog_new_with_buttons( "Create new file",
                                        NULL,
                                        (GtkDialogFlags)0,
                                        GTK_STOCK_CANCEL,
@@ -224,11 +223,11 @@ void CreateNewFileDialog(const char * workdir,const char * command)
     gtk_dialog_set_alternative_button_order( GTK_DIALOG(dlg), GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL, -1 );
 
     box = ( ( GtkDialog* ) dlg )->vbox;
-    prompt = (GtkLabel* ) gtk_label_new(_( "Input a name for the new file:" ));
+    prompt = (GtkLabel* ) gtk_label_new("Input a name for the new file:");
     gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
 
     entry = gtk_entry_new();
-    gtk_entry_set_text( GTK_ENTRY( entry ), _( "newfile" ) );
+    gtk_entry_set_text( GTK_ENTRY( entry ),"newfile");
     gtk_box_pack_start( GTK_BOX( box ), entry, FALSE, FALSE, 4 );
 
     gtk_dialog_set_default_response( ( GtkDialog* ) dlg, GTK_RESPONSE_OK );
@@ -244,8 +243,8 @@ void CreateNewFileDialog(const char * workdir,const char * command)
 		if ( g_file_test( full_path.s, (GFileTest)(G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) ) )
         {
             gtk_label_set_text( prompt,
-                                _( "The name you specified already used for folder.\n"
-                                   "Please input a new one:" ) );
+                                "The name you specified already used for folder.\n"
+                                   "Please input a new one:");
             continue;
         }
 		ClassString com=g_strdup_printf("%s %s&",command,full_path.s);
@@ -268,7 +267,7 @@ void NewSearch(const char * workdir)
 	GtkWidget* box;
     GtkTreeIter      iter;
 	
-	dlg = gtk_dialog_new_with_buttons( _("Find files"),
+	dlg = gtk_dialog_new_with_buttons( "Find files",
                                        NULL,
                                        (GtkDialogFlags)0,
                                        GTK_STOCK_CANCEL,
@@ -280,7 +279,7 @@ void NewSearch(const char * workdir)
     gtk_dialog_set_alternative_button_order( GTK_DIALOG(dlg), GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL, -1 );
 
     box = ( ( GtkDialog* ) dlg )->vbox;
-    prompt = (GtkLabel* ) gtk_label_new(_( "Input a mask file:" ));
+    prompt = (GtkLabel* ) gtk_label_new("Input a mask file:");
     gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
 
     if(!SearchMaskStore)
@@ -315,7 +314,7 @@ void NewSearch(const char * workdir)
     gtk_combo_box_set_active_iter( (GtkComboBox*)EntryMask, &iter  );	
 
 	box = ( ( GtkDialog* ) dlg )->vbox;
-    prompt = (GtkLabel* ) gtk_label_new(_( "Input a text :" ));
+    prompt = (GtkLabel* ) gtk_label_new("Input a text :");
     gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
 
     GtkWidget* EntryText = gtk_combo_box_entry_new_with_model(GTK_TREE_MODEL(SearchTextStore),0);
@@ -327,7 +326,7 @@ void NewSearch(const char * workdir)
 	
     gtk_dialog_set_default_response( ( GtkDialog* ) dlg, GTK_RESPONSE_OK );
 
-	prompt = (GtkLabel* ) gtk_label_new(_( "Отображать ввиде" ));
+	prompt = (GtkLabel* ) gtk_label_new("Отображать ввиде");
     gtk_box_pack_start( GTK_BOX( box ), (GtkWidget*)prompt, FALSE, FALSE, 4 );
 
 	GtkWidget* EntryMode = gtk_combo_box_entry_new_with_model(GTK_TREE_MODEL(SearchModeStore),0);

@@ -111,7 +111,7 @@ void view_popup_menu_clear_trash(GtkWidget *menuitem, gpointer userdata)
                                       GTK_DIALOG_MODAL,
                                       GTK_MESSAGE_WARNING,
                                       GTK_BUTTONS_YES_NO,
-                                      _( "Really delete files in trash ?" ) );
+                                      "Really delete files in trash ?");
         gtk_dialog_set_default_response (GTK_DIALOG (dlg), GTK_RESPONSE_YES); //MOD
         ret = gtk_dialog_run( GTK_DIALOG( dlg ) );
         gtk_widget_destroy( dlg );
@@ -472,7 +472,7 @@ void ClassSidePanel::ScanGvfs(GtkListStore * store)
 	int n = scandir(dir.s, &entry, sel, alphasort);
 	if (n < 0) 
 	{
-		printf("Error read directory .gvfs\n");
+		printf("Not read %s\n",dir.s);
 		return;
 	}
 

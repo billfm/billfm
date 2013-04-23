@@ -76,7 +76,9 @@ void view_popup_menu_infodir(GtkWidget *menuitem, ClassTreePanel * panel)
 	GList * l = panel->GetSelectedFiles();
 	if(l) 
 	{	
-     ClassString mes=InfoDir(l);
+		InfoOperation info;
+		info.func=TASK_INFO;
+		ClassString mes=InfoDir(l,&info);
      gtk_statusbar_push (StatusBar,0, mes.s);
 	}			
 }

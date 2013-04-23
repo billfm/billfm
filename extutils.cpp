@@ -18,13 +18,16 @@
 #include "fsmonitor.h"
 
 
-extern GtkProgressBar* ProgressBar;
+extern GtkProgressBar* pgBar;
+extern GtkProgressBar* pgBarCommon;
 extern GtkProgressBar* PulseBar;
 
 typedef struct
 {
-	size_t size;
-	size_t done;
+	size_t file_size;
+	size_t file_done;
+	size_t all_size;
+	size_t all_done;
 	char * path;
 } PROGRESS;
 
@@ -91,9 +94,12 @@ void StartProgressBar()
 	}	
 
 	ClassString str=g_strdup("");
-   	gtk_progress_bar_set_text(ProgressBar,str.s);
-	gtk_progress_bar_update(ProgressBar,0);
-	gtk_widget_show((GtkWidget*)ProgressBar);
+   	gtk_progress_bar_set_text(pgBar,str.s);
+   	gtk_progress_bar_set_text(pgBarCommon,str.s);	
+	gtk_progress_bar_update(pgBar,0);
+	gtk_progress_bar_update(pgBarCommon,0);	
+	gtk_widget_show((GtkWidget*)pgBar);
+	gtk_widget_show((GtkWidget*)pgBar);	
     g_thread_create(ThreadProgress, &data_copy, FALSE, NULL);
 }
 
@@ -137,41 +143,6 @@ void InitExtUtils(void)
     data_find.path=g_strdup(PATH_INFO_FIND);	
 }
 
-//------------------------------------------------------------------------------
-
-void DrawProgress(void)
-{
-	ClassString str;
-	pthread_mutex_lock(&BusyProgress);	
-	double value=double(data_copy.done)/data_copy.size;
-    int puls_end= (data_find.done==data_find.size)>0;
-    int find_count=data_find.size;
-	pthread_mutex_unlock(&BusyProgress);	
-
-	if(PulseVisible)
-	{
-		if(puls_end)
-		{	
-			str=g_strdup_printf("Найдено %d",find_count);
-	    	gtk_progress_bar_set_text(PulseBar,str.s);
-			gtk_progress_bar_update(PulseBar,0);
-		} else 	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(PulseBar));
-	}	
-	if(value==1.0)
-	{	
-		str=g_strdup_printf("Выполнено");
-	} else
-	{	
-		str=g_strdup_printf("%3.1f",(value*100));
-	}	
-	if(value>0 && value<=1.0)
-	{	
-    	gtk_progress_bar_set_text(ProgressBar,str.s);
-		gtk_progress_bar_update(ProgressBar,value);
-		gtk_widget_show((GtkWidget*)ProgressBar);
-	}	
-}
-
 //-----------------------------------------------------------------------------
 
 void ExternalFind(const char * mask,const char * text, const char * dest_dir, int mode)
@@ -190,50 +161,6 @@ void ExternalFind(const char * mask,const char * text, const char * dest_dir, in
 	fclose(f);
     StartPulseBar();
 	system(com.s);
-}
-
-
-//------------------------------------------------------------------------------
-
-gpointer ThreadProgress(gpointer _data)
-{
-    PROGRESS * data=(PROGRESS*)_data;
-	long int all=1;
-    long int done=0;	
-	int len;
-	char buf[128];
-	int size;
-    int progress_id=open(data->path,O_RDONLY);
-	while(progress_id>0)
-	{		
-		size=read(progress_id,&buf[len],1);
-		if(size>0)
-		{	
-		  	len+=size;
-			if(buf[len-1]=='\n')
-		    { 
-				buf[len-1]=0;
-				sscanf(buf,"%ld %ld",&done,&all);
-//				printf("%s\n",buf);
-				len=0;
-				pthread_mutex_lock(&BusyProgress);	
-				data->size=all;
-				data->done=done;
-				pthread_mutex_unlock(&BusyProgress);	
-		    } 
-		} else
-		{	
-			if(size<0)
-			{	
-				ClassString mes = g_strdup_printf("Error (%d) '%s'",errno,strerror(errno));
-				printf("%s\n",mes.s);
-			}	
-			break;
-		}	
-	}
-	printf("end read %s %d\n",buf,size);
-	if(progress_id>0) close(progress_id);
-	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -300,3 +227,103 @@ void ExternalFileCopy(uid_t user,int operation)
 
 //-----------------------------------------------------------------------------
 
+gpointer ThreadProgress(gpointer _data)
+{
+    PROGRESS temp;
+	PROGRESS * data=(PROGRESS*)_data;
+	int len;
+	char buf[128];
+	int size;
+    int progress_id=open(data->path,O_RDONLY);
+	while(progress_id>0)
+	{		
+		size=read(progress_id,&buf[len],1);
+		if(size>0)
+		{	
+		  	len+=size;
+			if(buf[len-1]=='\n')
+		    { 
+				buf[len-1]=0;
+				sscanf(buf,"%ld %ld %ld %ld",
+				       &temp.file_done, &temp.file_size, &temp.all_done, &temp.all_size);
+
+//				printf("%s\n",buf);
+				len=0;
+				pthread_mutex_lock(&BusyProgress);	
+				data->file_done=temp.file_done;
+				data->file_size=temp.file_size; 
+				data->all_done=temp.all_done; 
+				data->all_size=temp.all_size;
+				pthread_mutex_unlock(&BusyProgress);	
+		    } 
+		} else
+		{	
+			if(size<0)
+			{	
+				ClassString mes = g_strdup_printf("Error (%d) '%s'",errno,strerror(errno));
+				printf("%s\n",mes.s);
+			}	
+			break;
+		}	
+	}
+	printf("end read %s %d\n",buf,size);
+	if(progress_id>0) close(progress_id);
+	return 0;
+}
+
+//------------------------------------------------------------------------------
+
+void DrawBar(GtkProgressBar*pg,double value)
+{
+	ClassString str;
+	if(value==1.0)
+	{	
+		str=g_strdup_printf("Выполнено");
+	} else
+	{	
+		str=g_strdup_printf("%3.1f",(value*100));
+	}	
+	if(value>0 && value<=1.0)
+	{	
+    	gtk_progress_bar_set_text(pg,str.s);
+		gtk_progress_bar_update(pg,value);
+		gtk_widget_show((GtkWidget*)pg);
+	} else
+	if(value==0)
+	{
+    	gtk_progress_bar_set_text(pg,"");
+		gtk_progress_bar_update(pg,0);
+		gtk_widget_hide((GtkWidget*)pg);
+	}	
+}
+
+void DrawProgress(void)
+{
+	ClassString str;
+	pthread_mutex_lock(&BusyProgress);	
+	double file_value=double(data_copy.file_done)/data_copy.file_size;
+	double all_value=double(data_copy.all_done)/data_copy.all_size;	
+    int puls_end= (data_find.file_done==data_find.file_size)>0;
+    int find_count=data_find.file_size;
+	int visible_common=data_copy.file_size!=data_copy.all_size;
+	data_copy.file_done=0;
+	data_copy.file_size=1;
+	data_copy.all_done=0;
+	data_copy.all_size=1;	
+
+	pthread_mutex_unlock(&BusyProgress);	
+
+	if(PulseVisible)
+	{
+		if(puls_end)
+		{	
+			str=g_strdup_printf("Найдено %d",find_count);
+	    	gtk_progress_bar_set_text(PulseBar,str.s);
+			gtk_progress_bar_update(PulseBar,0);
+		} else 	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(PulseBar));
+	}	
+	DrawBar(pgBar,file_value);
+	if(visible_common) DrawBar(pgBarCommon,all_value); else DrawBar(pgBarCommon,0);
+}
+
+//-----------------------------------------------------------------------------

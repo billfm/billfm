@@ -22,7 +22,8 @@ typedef void(*BUTTON_CALLBACK)(GtkButton*, int);
 
 int SelectedSidePanel;
 
-GtkProgressBar* ProgressBar;
+GtkProgressBar* pgBar;
+GtkProgressBar* pgBarCommon;
 GtkProgressBar* PulseBar;
 
 
@@ -712,10 +713,13 @@ int main( int    argc, char **argv )
 
 	Panels[0]->SetNotActive();
 
-	ProgressBar=(GtkProgressBar *)gtk_builder_get_object( builder, "progressbar1" );
-	PulseBar=(GtkProgressBar *)gtk_builder_get_object( builder, "progressbar2" );	
+	pgBar=(GtkProgressBar *)gtk_builder_get_object( builder,"progressbar1");
+	pgBarCommon=(GtkProgressBar *)gtk_builder_get_object( builder,"progressbar2");
+	PulseBar=(GtkProgressBar *)gtk_builder_get_object( builder, "progressbar3" );
     gtk_progress_bar_pulse(PulseBar);
-	gtk_widget_hide((GtkWidget*)ProgressBar);
+
+	gtk_widget_hide((GtkWidget*)pgBar);
+	gtk_widget_hide((GtkWidget*)pgBarCommon);	
 	gtk_widget_hide((GtkWidget*)PulseBar);
 	
 	gtk_window_set_title(GTK_WINDOW(topWindow), "Bill-file-manager");

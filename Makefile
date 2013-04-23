@@ -1,12 +1,12 @@
 CC=g++
-LDLIBS=`pkg-config --libs gtk+-2.0 gmodule-2.0 exo-0.3`
-CFLAGS=-Wall -g `pkg-config --cflags gtk+-2.0 gmodule-2.0 exo-0.3`
+LDLIBS=`pkg-config --libs gtk+-2.0 gmodule-2.0`
+CFLAGS=-Wall -g `pkg-config --cflags gtk+-2.0 gmodule-2.0`
 
-billfm: billfm.o trash.o mime.o panels.o on_button.o exopanel.o treepanel.o sidepanel.o override.o\
+billfm: billfm.o trash.o mime.o panels.o on_button.o treepanel.o sidepanel.o override.o\
  ptk-clipboard.o path-entry.o input-dialog.o icon-cell-renderer.o utils.o disks.o setting.o\
  fileprop.o dropbox.o fsmonitor.o mainmenu.o bufgets.o extutils.o\
 
-	$(CC) $(LDLIBS) -o billfm billfm.o trash.o mime.o panels.o on_button.o exopanel.o treepanel.o\
+	$(CC) $(LDLIBS) -o billfm billfm.o trash.o mime.o panels.o on_button.o treepanel.o\
 	 sidepanel.o override.o ptk-clipboard.o path-entry.o input-dialog.o icon-cell-renderer.o\
 	 utils.o disks.o fileprop.o dropbox.o fsmonitor.o setting.o mainmenu.o bufgets.o extutils.o
 
@@ -45,9 +45,6 @@ panels.o: panels.cpp
 
 on_button.o: on_button.cpp
 	$(CC) $(CFLAGS) -c on_button.cpp
-
-exopanel.o: exopanel.cpp
-	$(CC) $(CFLAGS) -c exopanel.cpp
 
 treepanel.o: treepanel.cpp
 	$(CC) $(CFLAGS) -c treepanel.cpp

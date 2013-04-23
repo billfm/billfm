@@ -54,6 +54,7 @@ static void FileOperation1(GList * l, const char * dest_dir, InfoOperation * fo)
 static int CheckWriteFile(const char * source,gchar ** dest, InfoOperation * fo);
 int CreateWriteDir(const char * source, gchar ** dest);
 int CreateNewSymlink(const char * link, const char * dest);
+static void ParserInfo(const char * source, InfoOperation * fo);
 
 //-----------------------------------------------------------------------------
 
@@ -145,20 +146,6 @@ static int UnlinkFile(const char * source)
 		ShowCancel(mes.s);
 	}  
 	return res;
-}
-
-//-----------------------------------------------------------------------------
-
-int IsEmptyDir(const char * source)
-{
-	if(!source) return 0;
-	StartFileOperation();
-	InfoOperation fo;
-	fo.func=TASK_INFO;
-
-	ParserDir(source,"/dev/null",&fo,0);
-	ClassString size=showfilesize(all_size);
-	return  all_dirs+all_files-1;
 }
 
 //-----------------------------------------------------------------------------
@@ -303,16 +290,6 @@ void OperationFile(const char * source,  const char * dest1, InfoOperation * fo)
 		return;
 	}	
 		
-	if(fo->func==TASK_INFO)
-	{	
-		ClassString str=g_strdup_printf("%s\n",source);
-		if(fo->log>0)
-		{	
-			write(fo->log,str.s,strlen(str.s));                          
-		}	
-		return;
-	}	
-	
 	if(fo->func==TASK_DELETE || fo->func==TASK_CLEAR_DIR)
 	{
 		UnlinkFile(source);
@@ -537,17 +514,6 @@ void RestoreSelectedFiles()
 	}
 }
 
-//-----------------------------------------------------------------------------
-
-long int GetSizeDir(const char * source)
-{
-	StartFileOperation();
-	InfoOperation fo;
-	fo.func=TASK_INFO;
-	ParserDir(source,"/dev/null",&fo,0);
-    return all_size;
-}
-
 //------------------------------------------------------------------------------
 
 void UtilsCreateLink(const char * source, const char * dest_dir)
@@ -768,101 +734,6 @@ long int GetFreeSpace2(const char * _name)
 
 //-----------------------------------------------------------------------------
 
-int LowFileCopy(const char * source, const char * dest, long int size, InfoOperation * fo)
-{
-	int max_frac;
-	int frac;
-	char mes[128];
-#define READ_BUFFER 4096*4
-	char buf[READ_BUFFER];
-	FILE *  fs=0;
-	FILE *  fd=0;
-	long int i=0;
-	int n;
-
-	long int free_size=GetFreeSpace2(dest);
-	if(free_size<size)
-	{
-		ClassString mes = g_strdup_printf("Нет места для копирования\n %s\n в %s",source,dest);
-		ShowWarning(mes.s);
-		return 1;
-	}
-	
-	fs=fopen(source,"r");
-	if(!fs)
-	{
-		ClassString mes = g_strdup_printf("Error open source '%s'.\n%s",source,strerror(errno));
-		ShowCancel(mes.s);
-		goto error;
-//		return 1;
-	}	
-
-	fd=fopen(dest,"w+");
-	if(!fd)
-	{
-		ClassString mes = g_strdup_printf("Error open tag '%s'.\n%s",dest,strerror(errno));
-		ShowCancel(mes.s);
-//		return 1;
-		goto error;
-	}	
-
-	max_frac=size/100;
-	frac=0;
-	while(i<size)
-	{
-		if(size-i>READ_BUFFER) n=READ_BUFFER; else n=size-i;
-
-		int r=fread(buf,1,n,fs);
-		if(r!=n)
-		{
-			ClassString mes = g_strdup_printf("Error read '%s'(%d %d).\n%s", source,r,n,strerror(errno));
-			ShowCancel(mes.s);
-			goto error;
-//			return 1;		
-		}	
-
-		int w=fwrite(buf,1,n,fd);
-		if(w!=n)
-		{
-			ClassString mes = g_strdup_printf("Error write '%s' (%d %d).\n%d-%s",
-			                              source,w,n,errno,strerror(errno));
-			ShowCancel(mes.s);
-			goto error;				
-//			return 1;		
-		}	
-		i+=n;
-		frac+=n;
-		if(frac>=max_frac)
-		{	
-			frac=0;
-			if(fo->progress>0)
-			{
-				sprintf(mes,"%ld %ld\n",i,size);
-				write(fo->progress,mes,strlen(mes));                          
-			}
-		}
-	}
-
-	if(fo->progress>0)
-	{
-		sprintf(mes,"%ld %ld\n",size,size);
-		write(fo->progress,mes,strlen(mes));                          
-	}	
-
-	fclose(fd);
-	fclose(fs);
-    CopyProperty(source,dest);
-//	printf("Copy file %s to %s ( %ld )\n",source,dest,size);
-	return 0;
-error:
-	if(fd) fclose(fd);
-	if(fs) fclose(fs);
-	return 1;
-#undef READ_BUFFER
-}
-
-//-----------------------------------------------------------------------------
-
 void UtilsClearTrash(void)
 {
 	ClassString source; 	
@@ -896,19 +767,6 @@ void UtilsClearTrash(void)
 
 //-----------------------------------------------------------------------------
 
-void ProcessCopyFiles(const char * dest_dir, InfoOperation * fo)
-{
-	if(fo->Lstat_dest(dest_dir, "Не открывается каталог получатель")) return;
-	GList * l=PanelGetSelected();
-    InfoDir(l);
-	fo->all_size=all_size;
-	fo->progress = open(PATH_INFO_PROGRESS,O_WRONLY);
-	FileOperation1(l,dest_dir,fo);
-	if(fo->progress>0) close(fo->progress);
-}
-
-//-----------------------------------------------------------------------------
-
 void SetRightDir(const char * source,int mask)
 {
 	StartFileOperation();
@@ -916,31 +774,6 @@ void SetRightDir(const char * source,int mask)
 	fo.func=TASK_DIR_RIGHT;
 	fo.st_mode=mask;
 	ParserDir(source,"/dev/null",&fo,0);
-}
-
-//-----------------------------------------------------------------------------
-
-gchar * InfoDir(GList * l)
-{
-	StartFileOperation();
-	InfoOperation fo;
-	fo.func=TASK_INFO;
-
-//    fo.log = open(PATH_INFO_LOG,O_WRONLY);
-	for ( ; l; l = l->next )
-	{
-		gchar* source = (gchar*) l->data;
-		if(cancel_all) break;
-		ParserDir(source,"/dev/null",&fo,0);
-	}
-    all_size=fo.all_size;
-	ClassString size=showfilesize(all_size);
-	if(fo.log>0) close(fo.log);
-
-	ClassString mes=g_strdup_printf("Dirs %d, files %d,hidden=%d, common size %ld %s ",
-	                       all_dirs,all_files,all_hidden,all_size,size.s);
-	if(!fo.right_error) return g_strdup(mes.s);
-	 else return g_strdup_printf("Error access %d, %s",fo.right_error,mes.s);
 }
 
 //-----------------------------------------------------------------------------
@@ -986,7 +819,7 @@ static void ParserDir(const char * source,  const char * dest, InfoOperation * f
 			{
 				if(fo->func==TASK_INFO)
 				{
-					fo->right_error++;
+					fo->open_error++;
 				}	else
 				{	
 					ClassString mes = g_strdup_printf("Error open source dir !\n Source file '%s'\n Error (%d) '%s'",
@@ -1037,14 +870,219 @@ static void ParserDir(const char * source,  const char * dest, InfoOperation * f
 		}
 		all_size+=fo->source_size;
 		OperationFile(source,dest,fo);
+	}
 
+}
+
+//-----------------------------------------------------------------------------
+
+static void ParserInfo(const char * source, InfoOperation * fo)
+{
+	struct stat source_stat;			
+    fo->source_open=lstat(source,&source_stat);
+	if(fo->source_open)
+	{
+		fo->open_error++;
+		return;
+	} else
+	{
+		fo->source_mode=source_stat.st_mode;
+		fo->source_size=source_stat.st_size;
+	}
+
+	if( S_ISDIR(fo->source_mode))
+    {
+		DIR * d;     
+		struct dirent * entry;
+		d = opendir(source);
+		if(d == NULL) 
+		{
+			fo->open_error++;
+			return;
+		}
+
+		while ( (entry = readdir(d))>0)
+	    {
+			if(!strcmp(entry->d_name,".")) continue;
+			if(!strcmp(entry->d_name,"..")) continue;
+			if(!strncmp(entry->d_name,".",1)) fo->all_hidden++;
+			ClassString src_new = g_build_filename(source,entry->d_name, NULL );
+			ParserInfo((const char*)src_new.s,fo);
+	     }  
+		closedir(d);
+		fo->all_dirs++; 
+    } else
+	{//file operation
+		fo->all_files++; 
+		if(!strncmp(source,".",1)) fo->all_hidden++;
 		if(S_ISREG(fo->source_mode) && !strstr(source,"/proc/kcore"))
 		{
 			fo->all_size+=fo->source_size;
 		}	
-			
+
+		if(fo->log>0)
+		{	
+			ClassString str=g_strdup_printf("%s\n",source);
+			write(fo->log,str.s,strlen(str.s));                          
+		}	
+
+	}
+}
+
+//-----------------------------------------------------------------------------
+
+int IsEmptyDir(const char * source)
+{
+	InfoOperation fo;
+	fo.func=TASK_INFO;
+	ParserInfo(source,&fo);
+	return  fo.all_dirs + fo.all_files-1;
+}
+
+//-----------------------------------------------------------------------------
+
+long int GetSizeDir(const char * source)
+{
+	InfoOperation fo;
+	fo.func=TASK_INFO;
+	ParserInfo(source,&fo);
+    return fo.all_size;
+}
+
+//-----------------------------------------------------------------------------
+
+gchar * InfoDir(GList * l, InfoOperation * fo)
+{
+	fo->func=TASK_INFO;
+//    fo.log = open(PATH_INFO_LOG,O_WRONLY);
+	for ( ; l; l = l->next )
+	{
+		gchar* source = (gchar*)l->data;
+		ParserInfo(source,fo);
 	}
 
+	ClassString size=showfilesize(fo->all_size);
+	if(fo->log>0) close(fo->log);
+
+	ClassString mes=g_strdup_printf("Dirs %d, files %d,hidden=%d, common size %ld %s ",
+	                       fo->all_dirs,
+	                       fo->all_files,
+	                       fo->all_hidden,
+	                       fo->all_size,
+	                       size.s);
+	if(!fo->open_error) return g_strdup(mes.s);
+	 else return g_strdup_printf("Error open %d, %s",fo->open_error,mes.s);
+}
+
+//-----------------------------------------------------------------------------
+
+int LowFileCopy(const char * source, const char * dest, long int size, InfoOperation * fo)
+{
+	int max_frac;
+	int frac;
+	char mes[128];
+#define READ_BUFFER 4096*4
+	char buf[READ_BUFFER];
+	FILE *  fs=0;
+	FILE *  fd=0;
+	long int i=0;
+	int n;
+
+	long int free_size=GetFreeSpace2(dest);
+	if(free_size<size)
+	{
+		ClassString mes = g_strdup_printf("Нет места для копирования\n %s\n в %s",source,dest);
+		ShowWarning(mes.s);
+		return 1;
+	}
+	
+	fs=fopen(source,"r");
+	if(!fs)
+	{
+		ClassString mes = g_strdup_printf("Error open source '%s'.\n%s",source,strerror(errno));
+		ShowCancel(mes.s);
+		goto error;
+//		return 1;
+	}	
+
+	fd=fopen(dest,"w+");
+	if(!fd)
+	{
+		ClassString mes = g_strdup_printf("Error open tag '%s'.\n%s",dest,strerror(errno));
+		ShowCancel(mes.s);
+//		return 1;
+		goto error;
+	}	
+
+	max_frac=size/1000;
+	frac=0;
+	while(i<size)
+	{
+		if(size-i>READ_BUFFER) n=READ_BUFFER; else n=size-i;
+
+		int r=fread(buf,1,n,fs);
+		if(r!=n)
+		{
+			ClassString mes = g_strdup_printf("Error read '%s'(%d %d).\n%s", source,r,n,strerror(errno));
+			ShowCancel(mes.s);
+			goto error;
+//			return 1;		
+		}	
+
+		int w=fwrite(buf,1,n,fd);
+		if(w!=n)
+		{
+			ClassString mes = g_strdup_printf("Error write '%s' (%d %d).\n%d-%s",
+			                              source,w,n,errno,strerror(errno));
+			ShowCancel(mes.s);
+			goto error;				
+//			return 1;		
+		}	
+		i+=n;
+		frac+=n;
+		fo->all_done+=n;
+		if(frac>=max_frac)
+		{	
+			frac=0;
+			if(fo->progress>0)
+			{
+				sprintf(mes,"%ld %ld %ld %ld\n",i,size,fo->all_done,fo->all_size);
+				write(fo->progress,mes,strlen(mes));                          
+			}
+		}
+	}
+
+	if(fo->progress>0)
+	{
+		sprintf(mes,"%ld %ld %ld %ld\n",size,size,fo->all_done,fo->all_size);
+		write(fo->progress,mes,strlen(mes));                          
+	}	
+
+	fclose(fd);
+	fclose(fs);
+    CopyProperty(source,dest);
+//	printf("Copy file %s to %s ( %ld )\n",source,dest,size);
+	return 0;
+error:
+	if(fd) fclose(fd);
+	if(fs) fclose(fs);
+	return 1;
+#undef READ_BUFFER
+}
+
+//-----------------------------------------------------------------------------
+
+void ProcessCopyFiles(const char * dest_dir, InfoOperation * fo)
+{
+	if(fo->Lstat_dest(dest_dir, "Не открывается каталог получатель")) return;
+	GList * l=PanelGetSelected();
+    InfoOperation info;
+	info.func=TASK_INFO;
+	InfoDir(l,&info);
+	fo->all_size=info.all_size;
+	fo->progress = open(PATH_INFO_PROGRESS,O_WRONLY);
+	FileOperation1(l,dest_dir,fo);
+	if(fo->progress>0) close(fo->progress);
 }
 
 //-----------------------------------------------------------------------------

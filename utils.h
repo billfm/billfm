@@ -84,23 +84,27 @@ class ClassString
 class InfoOperation
 {
 	public :
-	int func;
-	int mode_link;
-	int source_delete;
-	int dest_override;
-	int dest_open;
-	int source_open;
-	mode_t source_mode;
-    off_t source_size;  		
-	mode_t dest_mode;
-    off_t dest_size;  		
-	int dest_errno;
-	int log;
-	int progress;
-    long int all_size;			
-	int	all_link;
-	int right_error;
-	mode_t st_mode;
+	int func;//тип операции
+	int mode_link;//что делать со ссылками
+	int source_delete;//
+	int dest_override;//
+	int dest_open;//
+	int source_open;//
+	mode_t source_mode;//
+    off_t source_size;//		
+	mode_t dest_mode;//
+    off_t dest_size;//
+	int dest_errno;//
+	int log;//
+	int progress;//
+    long int all_done;//размер скопированного-перемещенного
+	long int all_size;//полный размер файлов
+	int	all_link;//
+	int	all_dirs;//
+	int	all_files;//	
+	int all_hidden;//
+	int open_error;//
+	mode_t st_mode;//
 	InfoOperation()
 	{
         progress=-1;
@@ -118,7 +122,11 @@ class InfoOperation
 		dest_size=0;
 		dest_errno=0;
 		all_link=0;
-		right_error=0;		
+		all_dirs=0;
+		all_files=0;
+		all_hidden=0;
+		open_error=0;
+		all_done=0;
 	};
 	int Lstat_dest(const char *file_name, const char * mes);
 	int Lstat_dest_new(const char *file_name, const char * mes);		
@@ -147,7 +155,7 @@ void scan_trash(const char * homedir);
 void SudoCopyFiles(GList * l, const char * dest_dir);
 int IsEmptyDir(const char * source);
 
-gchar * InfoDir(GList * l);
+gchar * InfoDir(GList * l, InfoOperation * fo);
 void UtilsUnlink(GList * l);
 void UtilsMoveInTrash(GList * l);
 void UtilsMoveFiles(GList * l, const char * dest_dir);

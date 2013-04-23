@@ -1,6 +1,5 @@
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <exo/exo.h>
 
 #include <iostream>
 #include <string>
@@ -86,7 +85,6 @@ class ClassPanel
  protected:
 	gchar * ColumnsName[MAX_COUNT_COLOMNS];
  protected:
-    ExoIconView*	iconview;
 	GtkTreeView*	treeview;
  public:
 	int OnlyHiddenList;
@@ -175,7 +173,6 @@ class ClassTreePanel : public ClassPanel
 	ClassTreePanel()
 	{
 		MyMode = 0;
-		iconview = 0;
 		treeview = 0;
 		but_path = 0;
 		MyPath =0;
@@ -216,7 +213,7 @@ public :
 };
 
 //-----------------------------------------------------------------------------
-
+/*
 class ClassIconPanel : public ClassPanel
 {
 public :
@@ -238,7 +235,7 @@ public :
 	void UnSelectAll(void);	
 	void SelectPattern(const char * pattern);
 };
-
+*/
 //-----------------------------------------------------------------------------
 
 extern ClassPanel * Panels[TV_COUNT];

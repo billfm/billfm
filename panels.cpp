@@ -23,7 +23,6 @@ ClassPanel::ClassPanel()
 	InDropboxFlag=0;
 	list_black_files=NULL;
 	SortType = TYPE_SORT_NAME;
-	iconview = 0;
 	treeview = 0;
 	MyIndex =0;
 	MyPath =0;
