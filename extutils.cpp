@@ -306,10 +306,17 @@ void DrawProgress(void)
     int puls_end= (data_find.file_done==data_find.file_size)>0;
     int find_count=data_find.file_size;
 	int visible_common=data_copy.file_size!=data_copy.all_size;
-	data_copy.file_done=0;
-	data_copy.file_size=1;
-	data_copy.all_done=0;
-	data_copy.all_size=1;	
+
+	if(file_value==1.0)
+	{	
+		data_copy.file_done=0;
+		data_copy.file_size=1;
+	}	
+	if(all_value==1.0)
+	{	
+		data_copy.all_done=0;
+		data_copy.all_size=1;
+	}
 
 	pthread_mutex_unlock(&BusyProgress);	
 
