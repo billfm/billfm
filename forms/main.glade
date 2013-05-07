@@ -772,15 +772,17 @@
                   <object class="GtkVBox" id="vbox3">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkButton" id="label1">
-                        <property name="label" translatable="yes">button</property>
+                      <object class="GtkHBox" id="PathButton1">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
@@ -808,15 +810,17 @@
                   <object class="GtkVBox" id="vbox2">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkButton" id="label2">
-                        <property name="label" translatable="yes">button</property>
+                      <object class="GtkHBox" id="PathButton2">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
                         <property name="position">0</property>
                       </packing>
                     </child>

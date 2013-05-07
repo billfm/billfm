@@ -462,16 +462,6 @@ void InitFolder(gchar * argv0)
 
 //-----------------------------------------------------------------------------
 
-void OnButtonUp( GtkButton* button, void * datauser )
-{ 
-	ClassPanel * panel=(ClassPanel *)(datauser);
-	ClassString path = g_path_get_dirname( panel->MyPath );
-	panel->SavePath=1;
-	panel->LoadDir(path.s);
-}
-
-//-----------------------------------------------------------------------------
-
 void SetActivePanel(int index)
 {
 	SelectedSidePanel=0;
@@ -489,29 +479,6 @@ void OnButtonChangeActive( GtkButton* button, int data )
 {
 	SetActivePanel(1-ActivePanel);
 }
-
-//-----------------------------------------------------------------------------
-
-void InitPanel(ClassPanel * panel)
-{
-	gchar * str;
-	str = g_strdup_printf("label%d", (panel->MyIndex&1) + 1);
-	panel->but_path = (GtkButton*)gtk_builder_get_object( builder, str );
-	g_signal_connect( G_OBJECT( panel->but_path ), "clicked", G_CALLBACK(OnButtonUp), (void*)panel );
-	g_free(str);
-
-	panel->CreatePanel();
-
-	str = g_strdup_printf("scrolledwindow%d", panel->MyIndex + 1);
-	GtkWidget * widget = panel->GetWidget();
-	gtk_container_add( GTK_CONTAINER(gtk_builder_get_object( builder, str)), widget );
-	g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(OnPanelKeypress), (void*)panel);
-	g_free(str);
-
-/**/
-	gtk_widget_show( widget );	
-}
-
 
 //-----------------------------------------------------------------------------
 
@@ -599,12 +566,12 @@ void BuildPathBox()
 
 	box = gtk_hbox_new (homogeneous, spacing);
 
-	CreateButton(box, ICON_GNOME_BACK, OnButtonBack);
-	CreateButton(box, ICON_GNOME_RELOAD, OnButtonReload);
-	CreateButton(box, ICON_GNOME_ACTIVE, OnButtonChangeActive);
-	CreateButton(box, ICON_GNOME_HIDE_LIST, OnButtonHiddenList);	
-	CreateButton(box, ICON_GNOME_BLACK_LIST, OnButtonBlackList);		
-	CreateButton(box, ICON_GNOME_SAME_PANEL, OnButtonSame);
+	CreateButton(box, ICON_PATH_BACK, OnButtonBack);
+	CreateButton(box, ICON_PATH_RELOAD, OnButtonReload);
+	CreateButton(box, ICON_PATH_ACTIVE, OnButtonChangeActive);
+	CreateButton(box, ICON_PATH_HIDE_LIST, OnButtonHiddenList);	
+	CreateButton(box, ICON_PATH_BLACK_LIST, OnButtonBlackList);		
+	CreateButton(box, ICON_PATH_SAME_PANEL, OnButtonSame);
 	
 	GtkWidget *box1=(GtkWidget *)gtk_builder_get_object( builder, "hbox2");	
     gtk_box_pack_start (GTK_BOX (box1), box, FALSE, FALSE, 0);
@@ -804,7 +771,80 @@ void MountGvfsArchive(void)
 
 void	OnButtonTest( GtkButton* button, int index_operation )
 {
+}
 
+//-----------------------------------------------------------------------------
+
+GtkWidget *xpm_label_box(ClassPanel * panel) 
+{
+    GtkWidget *box;
+    GtkWidget *label;
+    GtkWidget *image;
+    /* Создаём контейнер для изображения и текста */
+    box = gtk_hbox_new (FALSE, 0);
+    gtk_container_set_border_width (GTK_CONTAINER (box), 2);
+    /* Определяем файл с изображением */
+//    image = gtk_image_new_from_file ((gchar*)ICON_PATH_FOLDER);
+	image = gtk_image_new();
+    panel->image_path=(GtkImage*)image;
+	/* Создаём ярлык для кнопки */
+    label = gtk_label_new (g_get_home_dir());
+    panel->label_path=(GtkLabel*)label;
+    /* Упаковываем рисунок и текст в контейнер */
+    gtk_box_pack_start (GTK_BOX (box), image, FALSE, FALSE, 3);
+    gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 3);
+    gtk_widget_show (image);
+    gtk_widget_show (label);
+    return box;
+}
+
+//-----------------------------------------------------------------------------
+
+void InitPanel(ClassPanel * panel)
+{
+	ClassString str = g_strdup_printf("PathButton%d", (panel->MyIndex&1) + 1);
+	GtkWidget* owner=(GtkWidget*)gtk_builder_get_object( builder,str.s);
+
+	GtkWidget* button = gtk_button_new ();
+	g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(OnButtonUp), (void*)panel );	
+
+		
+    GtkWidget* box = xpm_label_box(panel);
+    gtk_widget_show (box);
+    gtk_container_add (GTK_CONTAINER (button), box);
+    gtk_widget_show (button);
+    gtk_container_add (GTK_CONTAINER (owner), button);
+
+	panel->CreatePanel();
+	str = g_strdup_printf("scrolledwindow%d", panel->MyIndex + 1);
+	GtkWidget * widget = panel->GetWidget();
+	gtk_container_add( GTK_CONTAINER(gtk_builder_get_object( builder, str.s)), widget );
+	g_signal_connect(G_OBJECT(widget), "key-press-event", G_CALLBACK(OnPanelKeypress), (void*)panel);
+
+/**/
+	gtk_widget_show( widget );	
+}
+
+
+//-----------------------------------------------------------------------------
+
+void OnButtonUp( GtkButton* button, void * datauser )
+{ 
+	ClassPanel * panel=(ClassPanel *)(datauser);
+	const char * tag=0;
+	ClassString path=g_path_get_dirname(panel->MyPath);
+
+	if(panel->InArchiveName && !strcmp(panel->InArchiveName,panel->MyPath))
+	{	
+		tag=g_path_get_basename(panel->InArchiveName);
+		ClassString archve = GetArchivePath();
+		path=g_strdup(&panel->MyPath[strlen(archve.s)]);
+		path=g_path_get_dirname(path.s);
+	}	
+
+	panel->SavePath=1;
+	panel->LoadDir(path.s);
+	panel->SetCursor(tag);	
 }
 
 //-----------------------------------------------------------------------------

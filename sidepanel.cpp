@@ -217,7 +217,7 @@ void add_separator(GtkListStore * store)
 	gtk_list_store_append(store, &iter );
 	gtk_list_store_set( store, &iter, MODEL_TEXT_NAME, "separator",	-1 );
 	gtk_list_store_set( store, &iter, MODEL_TEXT_FULL_NAME, "separator" ,	-1 );
-	gtk_list_store_set( store, &iter, MODEL_INT_COL_MIME, ICON_GNOME_FS_FOLDER ,	-1 );			
+	gtk_list_store_set( store, &iter, MODEL_INT_COL_MIME, ICON_GNOME_FOLDER ,	-1 );			
 }
 
 //----------------------------------------------------------------------------- 
@@ -226,7 +226,6 @@ void ClassSidePanel::ScanBookmark(GtkListStore * store)
 {
 	GtkTreeIter   iter;
 
-//	ClassString book = g_build_filename(g_get_home_dir(),".config/billfm/bookmark", NULL );	
    	ClassString book=g_build_filename(config_path,"bookmark",NULL);
 	struct dirent ** entry;
 	int n = scandir(book.s, &entry, sel, alphasort);
@@ -245,11 +244,11 @@ void ClassSidePanel::ScanBookmark(GtkListStore * store)
 		ClassString dest = g_build_filename(book.s, entry[i]->d_name, NULL );	
 		ClassString link=g_file_read_link(dest.s,NULL);
 
-		int mime_type=ICON_GNOME_FS_FOLDER;
+		int mime_type=ICON_GNOME_FOLDER;
 		struct stat file_stat;
 		if(!lstat( link.s, &file_stat ) ) 
 		{
-			mime_type=ICON_GNOME_FS_FOLDER;
+			mime_type=ICON_GNOME_FOLDER;
 		}	else
 		{
 			mime_type=ICON_GNOME_BREAK_LINK;
@@ -381,7 +380,7 @@ gboolean  OnButtonPressedSidePanel (GtkWidget *treeview, GdkEventButton *event, 
 			if( (mime==ICON_GNOME_FS_EMPTY_TRASH) || (mime==ICON_GNOME_FS_FULL_TRASH))	
 				view_popup_menu_trash(event);
 			if(mime==ICON_GNOME_DROPBOX) ShowMenuDropbox(event);
-			if(mime==ICON_GNOME_FS_FOLDER) ShowMenuBookmark(event);
+			if(mime==ICON_GNOME_FOLDER) ShowMenuBookmark(event);
 			g_free(fullname);
 			g_free(name);			
 		}	

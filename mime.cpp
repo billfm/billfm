@@ -39,11 +39,11 @@ static int GetMimeClassic(const char * path_folder, const char * full_name);
 
 //-----------------------------------------------------------------------------
 
-int  find_userbin_mime(const char * p)
-{
- InfoIcon * info=find_userbin(p,1);
-	if(info) return info->icon_index; else return 0;
-}
+//int  find_userbin_mime(const char * p)
+//{
+// InfoIcon * info=find_userbin(p,1);
+//	if(info) return info->icon_index; else return 0;
+//}
 
 //-----------------------------------------------------------------------------
 
@@ -319,7 +319,7 @@ static int GetMimeClassic(const char * path_folder, const char * full_name)
 
 	if(lstat( full_name, &file_stat ))	return ICON_GNOME_TEXT;
 
-	if(S_ISDIR(file_stat.st_mode))	return ICON_GNOME_FS_FOLDER;
+	if(S_ISDIR(file_stat.st_mode))	return ICON_GNOME_FOLDER;
 
 	int mime_type=ICON_GNOME_TEXT;
 
@@ -441,7 +441,7 @@ int  GetDeviceType(const char * _dev)
 		FILE * f=fopen(temp,"rt");
 		char buffer[16];
 		fread(buffer,1,10,f);
-		fclose(f);
+		fclose(f); 
 		buffer[1]=0;
 
 		if(buffer[0]=='1')
@@ -462,6 +462,13 @@ gchar * GetNetworkPath(void)
 	if(lstat(res,&filestat))  return 0;
 	return res;	
 }	
+
+//-----------------------------------------------------------------------------
+
+gchar * GetPathFind(void)
+{
+	return g_strdup_printf("/tmp/billfm/find"); 
+}
 
 //-----------------------------------------------------------------------------
 
@@ -567,50 +574,6 @@ void ScanMime(void)
 
 //-----------------------------------------------------------------------------
 
-int GetMime(const char * dirname, const char * fullname)
-{
-	int mime_type=GetMimeClassic(dirname,fullname);
-	int type = mime_type&0xFF;
-	int flags = mime_type & (~0xFF);
-	
-	ClassString net_path=GetNetworkPath();
-	if(net_path.s && !strncmp(net_path.s,dirname,strlen(net_path.s)) && (type==ICON_GNOME_FS_FOLDER))
-	{	
-		ClassString is_domain=g_path_get_dirname(fullname);
-		ClassString is_computer=g_path_get_dirname(is_domain.s);
-		ClassString is_shared=g_path_get_dirname(is_computer.s);
-
-		if(!strcmp(is_domain.s,net_path.s)) 
-		{
-			mime_type=ICON_GNOME_NETWORK + flags;
-		} else
-		if(!strcmp(is_computer.s,net_path.s)) 
-		{
-			mime_type=ICON_GNOME_COMPUTER + flags;
-		} else
-		if(!strcmp(is_shared.s,net_path.s)) 
-		{
-			mime_type=ICON_GNOME_SMB_SHARE + flags;
-		}
-			
-	}	else
-	
-	if(!strcmp(dirname,"/usr/bin")) 
-	{ 
-		mime_type=find_userbin_mime(fullname);
-	} else
-
-	if(!InMenuPath(fullname))
-	{
-		mime_type=GetMimeClassic(dirname,fullname);
-		mime_type&=0xFF;
-	}	
-
-	return mime_type;
-}
-
-//-----------------------------------------------------------------------------
-
 gchar * GetArchivePath(void)
 {
 	return g_strdup_printf("/tmp/billfm/archives");
@@ -631,13 +594,12 @@ int IsArchve(const char * fullname)
 
 void ClickExecFile(const char * name, struct stat * file_stat)
 {
-	
+	 
 	if(IsArchve(name))
 	{   
-		ClassString DestDir=GetArchivePath();
-		DestDir=g_build_filename(DestDir.s,name,NULL);
-		ExternalListTar(name,DestDir.s);
-		Panels[ActivePanel]->LoadDir(DestDir.s);
+		const char * dirname=Panels[ActivePanel]->SetArchiveName(name);
+		ExternalListTar(name,dirname);
+		Panels[ActivePanel]->LoadDir(dirname);
 		return;		
 	}	
 
@@ -676,6 +638,57 @@ void ClickExecFile(const char * name, struct stat * file_stat)
 	}
 
 	if(command.s) system(command.s);
+}
+
+//-----------------------------------------------------------------------------
+
+int GetMime(const char * dirname, const char * fullname)
+{
+	if(!strcmp(dirname,"/usr/bin")) 
+	{ 
+		 InfoIcon * info=find_userbin(fullname,1);
+  		 if(info) return info->icon_index; 
+		  else return GetMimeClassic(dirname,fullname);
+	}
+
+	if(!InMenuPath(fullname))
+	{
+		int mime_type=GetMimeClassic(dirname,fullname);
+		mime_type&=0xFF;
+    	return mime_type;		
+	}	
+		
+//	int mime_type=GetMimeClassic(dirname,fullname);
+//	int type = mime_type&0xFF;
+//	int flags = mime_type & (~0xFF);
+	
+	ClassString net_path=GetNetworkPath();
+	if(net_path.s && !strncmp(net_path.s,dirname,strlen(net_path.s)) /*&& (type==ICON_GNOME_FS_FOLDER)*/)
+	{	
+		int mime_type=ICON_GNOME_TEXT;	
+		ClassString is_domain=g_path_get_dirname(fullname);
+		ClassString is_computer=g_path_get_dirname(is_domain.s);
+		ClassString is_shared=g_path_get_dirname(is_computer.s);
+
+		if(!strcmp(is_domain.s,net_path.s)) 
+		{
+			mime_type=ICON_GNOME_NETWORK;// + flags;
+		} else
+		if(!strcmp(is_computer.s,net_path.s)) 
+		{
+			mime_type=ICON_GNOME_COMPUTER;// + flags;
+		} else
+		if(!strcmp(is_shared.s,net_path.s)) 
+		{
+			mime_type=ICON_GNOME_SMB_SHARE;// + flags;
+		} else
+		{	
+			mime_type=GetMimeClassic(dirname,fullname);
+		}
+		return mime_type;		
+	}
+	
+	return GetMimeClassic(dirname,fullname);
 }
 
 //-----------------------------------------------------------------------------

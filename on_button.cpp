@@ -510,13 +510,13 @@ gchar * Untar(const char * name,const char * destdir)
 
 	if(IsTar(zip.s))
 	{	
-        ClassString base=g_path_get_dirname(inzip.s);
-		printf("`%s` base `%s`",inzip.s,base.s);
-		if(!strcmp(base.s,"."))
-		{
-			com=g_strdup_printf("cd '%s'; tar -x --file='%s' './%s'", unpack_dir,zip.s,inzip.s);
-		}	else 
-			com=g_strdup_printf("cd '%s'; tar -x --file='%s' '%s'", unpack_dir,zip.s,inzip.s);
+//        ClassString base=g_path_get_dirname(inzip.s);
+//		printf("`%s` base `%s`",inzip.s,base.s);
+//		if(!strcmp(base.s,"."))
+//		{
+//			com=g_strdup_printf("cd '%s'; tar -x --file='%s' './%s'", unpack_dir,zip.s,inzip.s);
+//		}	else 
+		com=g_strdup_printf("cd '%s'; tar -x --file='%s' '%s'", unpack_dir,zip.s,inzip.s);
 		Execute(com.s);
 	}	else
 

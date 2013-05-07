@@ -27,10 +27,11 @@ ClassPanel::ClassPanel()
 	MyIndex =0;
 	MyPath =0;
 	MyMode = 0;
-	but_path = 0;
+	label_path = 0;
 	file_list = NULL;
 	paste_list = NULL;
 	history = NULL;
+	InArchiveName=NULL;
     ColumnsName[0] = g_strdup("icon");
 	ColumnsName[1] = g_strdup("name");
 	ColumnsName[2] = g_strdup("ext");
@@ -286,15 +287,6 @@ GtkListStore * ClassPanel::CreateNewModel()
 
 //-----------------------------------------------------------------------------
 
-void ClassPanel::SetMyPath(const char * path_folder)
-{
-	if(but_path) gtk_button_set_label(but_path, path_folder);
-	if(MyPath) g_free(MyPath);
-	MyPath=g_strdup(path_folder);
-}
-
-//-----------------------------------------------------------------------------
-
 static int sel(const struct dirent * d)
 {
 	if(!strcmp(d->d_name,"..")) return 0;
@@ -475,6 +467,11 @@ void ClassPanel::LoadDir(const char * fullname)
 	OkSearchFlag=0;
 	if(!strcmp(fullname,"/usr/bin")) ScanUsrbin();
 
+	if(InArchiveName)
+	{	
+		if(strncmp(fullname,InArchiveName,strlen(InArchiveName))) SetArchiveName(0);
+	}
+	
 	TypeFS = GetTypeFS(fullname);	
 //	if(!strncmp(fullname,PATH_BILLFM_MENU,strlen(PATH_BILLFM_MENU)))
 	if(!InMenuPath(fullname))
@@ -838,7 +835,7 @@ void ClassPanel::InfoSingleInStatusBar(void)
 //-----------------------------------------------------------------------------
 
 void ClassPanel::SelectBreakLink(void)
-{
+{ 
 
 	GtkTreeIter iter;
 	GtkTreeModel * model = GetModel();	
@@ -855,6 +852,66 @@ void ClassPanel::SelectBreakLink(void)
 		valid=gtk_tree_model_iter_next(model,&iter);		
 	}
 	InfoSelectedInStatusBar();
+}
+
+//-----------------------------------------------------------------------------
+
+void ClassPanel::SetMyPath(const char * dirname)
+{
+	ClassString net_path=GetNetworkPath();
+	const char * home=g_get_home_dir();
+	ClassString find_path=GetPathFind();
+	
+	if(net_path.s && !strncmp(net_path.s,dirname,strlen(net_path.s)))
+	{	
+		gtk_image_set_from_pixbuf(image_path,IconPixbuf[ICON_GNOME_NETWORK]);
+		gtk_label_set_text(label_path,&dirname[strlen(net_path.s)]);
+	}	
+	else
+	if(!strncmp(home,dirname,strlen(home)))
+	{	
+		gtk_image_set_from_pixbuf(image_path,IconPixbuf[ICON_GNOME_FS_HOME]);
+		gtk_label_set_text(label_path,&dirname[strlen(home)]);
+	}	
+	else
+	if(InArchiveName && !strncmp(InArchiveName,dirname,strlen(InArchiveName)))
+	{	
+		gtk_image_set_from_pixbuf(image_path,IconPixbuf[ICON_GNOME_ARCHIVE]);
+		gtk_label_set_text(label_path,&dirname[strlen(InArchiveName)]);
+	}	
+	else
+	if(find_path.s && !strncmp(find_path.s,dirname,strlen(find_path.s)))
+	{	
+		gtk_image_set_from_pixbuf(image_path,IconPixbuf[ICON_GNOME_FIND]);
+		gtk_label_set_text(label_path,&dirname[strlen(find_path.s)]);
+	}	
+	else
+	{		
+		gtk_image_set_from_pixbuf(image_path,IconPixbuf[ICON_GNOME_FOLDER]);
+		gtk_label_set_text(label_path,dirname);
+	}	
+
+	if(MyPath) g_free(MyPath);
+	MyPath=g_strdup(dirname);
+}
+
+//-----------------------------------------------------------------------------
+
+const char * ClassPanel::SetArchiveName(const char * filename)
+{
+	if(InArchiveName)
+	{	
+		g_free(InArchiveName);
+		InArchiveName=0;
+	}
+
+	if(filename)
+	{	
+		ClassString DestDir=GetArchivePath();
+		DestDir=g_build_filename(DestDir.s,filename,NULL);
+		InArchiveName=g_strdup(DestDir.s);
+	}
+	return InArchiveName;
 }
 
 //-----------------------------------------------------------------------------

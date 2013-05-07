@@ -17,4 +17,6 @@
 ./icons/computer.png
 ./icons/folder-remote.png
 ./icons/gnome-commander.png
-./icons/back.png"
+./icons/back.png
+./icons/xarchiver.png
+./icons/find.png

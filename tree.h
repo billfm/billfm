@@ -9,7 +9,7 @@ using namespace std;
 
 #define		MASK_MIME					0xFF
 #define		ICON_GNOME_TEXT				0
-#define		ICON_GNOME_FS_FOLDER		1
+#define		ICON_GNOME_FOLDER			1
 #define		ICON_GNOME_X_APP			2
 #define		ICON_GNOME_X_SCRIPT			3
 #define		ICON_GNOME_FS_HOME			4
@@ -27,16 +27,20 @@ using namespace std;
 #define		ICON_GNOME_COMPUTER  		16
 #define		ICON_GNOME_SMB_SHARE  		17
 #define		ICON_GNOME_COMMANDER  		18
-#define		ICON_GNOME_BACK		  		"/home/vik/billfm/icons/back.png"
-#define		ICON_GNOME_RELOAD	  		"/home/vik/billfm/icons/reload.png"
-#define		ICON_GNOME_ACTIVE   		"/home/vik/billfm/icons/change-active.png"
-#define		ICON_GNOME_BLACK_LIST  		"/home/vik/billfm/icons/image-missing.png"
-#define		ICON_GNOME_HIDE_LIST  		"/home/vik/billfm/icons/security-medium.png"
-#define		ICON_GNOME_SAME_PANEL  		"/home/vik/billfm/icons/object-flip-horizontal.png"
+#define		ICON_GNOME_BACK		  		19
+#define		ICON_GNOME_ARCHIVE	  		20
+#define		ICON_GNOME_FIND		  		21
+
+#define		ICON_PATH_BACK		  		"/home/vik/billfm/icons/back.png"
+#define		ICON_PATH_RELOAD	  		"/home/vik/billfm/icons/reload.png"
+#define		ICON_PATH_ACTIVE   			"/home/vik/billfm/icons/change-active.png"
+#define		ICON_PATH_BLACK_LIST  		"/home/vik/billfm/icons/image-missing.png"
+#define		ICON_PATH_HIDE_LIST  		"/home/vik/billfm/icons/security-medium.png"
+#define		ICON_PATH_SAME_PANEL  		"/home/vik/billfm/icons/object-flip-horizontal.png"
 
 
 
-#define		FIRST_FREE_INDEX			19
+#define		FIRST_FREE_INDEX			22
 
 
 #define		MIME_FLAG_LINK				0x8000
@@ -101,8 +105,11 @@ class ClassPanel
 	int SortType;
 	int MyIndex;
 	int MyMode;
-	GtkButton *	but_path;
+	GtkLabel*	label_path;
+	GtkImage*  image_path;
 	GList * history;
+	gchar * InArchiveName;
+		
 	ClassPanel();		
 	void reload(void);
 	void __LoadDir(const char * path_folder);
@@ -161,7 +168,8 @@ class ClassPanel
 	void InfoSelectedInStatusBar(void);
 	void InfoSingleInStatusBar(void);
 	void InfoMultiInStatusBar(void);		
-	void SelectBreakLink(void);		
+	void SelectBreakLink(void);
+	const char * SetArchiveName(const char * filename);
 } ;
 
 //-----------------------------------------------------------------------------
@@ -174,7 +182,7 @@ class ClassTreePanel : public ClassPanel
 	{
 		MyMode = 0;
 		treeview = 0;
-		but_path = 0;
+		label_path = 0;
 		MyPath =0;
 	}
 	virtual	void CreatePanel(void); 
@@ -212,30 +220,6 @@ public :
 	void ScanTrash(GtkListStore * store);
 };
 
-//-----------------------------------------------------------------------------
-/*
-class ClassIconPanel : public ClassPanel
-{
-public :
-	ClassIconPanel()
-	{
-		MyMode = 1;
-	}
-	virtual	void CreatePanel(void); 
-	virtual	void SetCursor(void);
-	virtual	GList * get_selected(GtkTreeModel** model);
-    virtual GtkTreeModel * GetModel(void);
-    virtual void SetModel(GtkTreeModel * model);
-    virtual GtkWidget* GetWidget(void);
-	virtual void SetVisibleColumn(int i, int val);
-	virtual	void SetColumnTitle(int i, char * name);
-	virtual void DeInit(void);
-	virtual	void SetCursor(const char * tag) {};
-	void SelectAll(void);
-	void UnSelectAll(void);	
-	void SelectPattern(const char * pattern);
-};
-*/
 //-----------------------------------------------------------------------------
 
 extern ClassPanel * Panels[TV_COUNT];
@@ -376,3 +360,4 @@ void DrawIconDropbox();
 GtkBuilder* CreateForm(const char * name);
 int InMenuPath(const char * path);
 gchar * InputPassword();
+gchar * GetPathFind(void);
